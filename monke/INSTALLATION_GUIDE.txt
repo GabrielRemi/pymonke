@@ -1,0 +1,17 @@
+Wie man vs-code mit LaTeX und python Funktion installiert (auf Windows):
+
+1-installiere Python 3.10 oder neuere Versionen über den Microsoft-Store
+2- installiere über die Eingabeaufforderung mit dem Befehl <pip install ...> und setze bei ... nacheinander folgende Pakete ein:
+	- numpy
+	- matplotlib
+	- latextable
+	- texttable
+	- monke2
+3 installiere MikTex oder TexLive auf windows oder MacTex auf mac https://miktex.org/download, https://www.tug.org/texlive/, https://www.tug.org/mactex/
+4 installiere strawberry perl auf windows https://strawberryperl.com/
+5 installiere visual studio code https://code.visualstudio.com/
+6 für vs code installiere das python, latex und jupyter notebook plug-in
+
+Um die README-Datei für das Paket herunterzuladen, füge folgende Zeile in das Jupyter-Notebook hinzu:
+
+from monke import readme
