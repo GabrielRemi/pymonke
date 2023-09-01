@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from texfile import Texfile
 
 def roundup(x,r=2):
         a = x*10**r
@@ -279,7 +280,7 @@ def error_round(x, xerr, error_mode = 'plus-minus', get_float = False):
             
         
 # Erstellt Wertetabellen, die in LaTeX eingefügt werden können
-def make_table(array,header ='',align = '', caption = None, latex=True, transpose = False, error_mode = 'plus-minus'):
+def make_table(array,header ='',align = '', caption = None, label = None, latex=True, transpose = False, error_mode = 'plus-minus') -> str:
     try:
         from texttable import Texttable
         from latextable import draw_latex
@@ -378,21 +379,19 @@ def make_table(array,header ='',align = '', caption = None, latex=True, transpos
                 
             table.add_row(list)
     if latex == True:
-        if caption:
-            text = draw_latex(table, caption = caption)
-        else:
-            text = draw_latex(table)
+        text = draw_latex(table, caption=caption, label=f'fig:{label}')
+
         if transpose == True:                                   # entfernt bei transponierter tabelle die erste Leere Zeile
             to_delete = '\n\t\t\t\\hline\n\t\t\t \\\\'
             text = text.replace(to_delete,'')
 
-        with open('data.tex','a') as file:
-            file.write(f'{text}\n')
+        # with open('data.tex','a') as file:
+        #     file.write(f'{text}\n')
 
     else:
         print(table.draw())
 
-    return 
+    return text
 
 def write_csv(values, header='',name='data'):
     import csv 

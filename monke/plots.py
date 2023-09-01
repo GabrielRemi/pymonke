@@ -32,6 +32,12 @@ def style():
     plt.rcParams['legend.frameon'] = True
     plt.rcParams['figure.figsize'] = [6.5,4.5]
     
+def axes_mathbook_style(ax):
+    ax.spines[["left", "bottom"]].set_position(("data",0))
+    ax.spines[["right", "top"]].set_visible(False)
+    ax.plot(1, 0, ">k", transform=ax.get_yaxis_transform(), clip_on=False)
+    ax.plot(0, 1, "^k", transform=ax.get_xaxis_transform(), clip_on=False)
+
     
 def legend(ax, size=10 , anchor = None):
     handles, labels = ax.get_legend_handles_labels()
