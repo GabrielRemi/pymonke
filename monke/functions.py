@@ -2,6 +2,18 @@ import numpy as np
 import math
 from texfile import Texfile
 
+# ERROR STYLE ENUM
+from enum import Enum
+class ErrorStyle(Enum):
+    PLUSMINUS = 1
+    PARENTHESIS = 2
+    SCIENTIFIC = 3
+    
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return self.value == other.value
+
 def roundup(x,r=2):
         a = x*10**r
         a = np.ceil(a)
@@ -38,106 +50,6 @@ def mittel_varianzgewichtet(val,val_err):
     # --test--
     # sigma = val_err/(val_err.sum())
     # return (sigma*val).sum()
-
-
-# Groeßter gemeinsamer Teiler
-def gcd(a, b):
-    
-    k = 0
-    while a != int(a) or b != int(b):
-        k += 1
-        a, b = a*1e1, b*1e1
-    a, b = int(a), int(b)
-    
-    if isinstance(a, int) and isinstance(b, int):
-        result = math.gcd(a,b)*10**(-k)
-    return result
-
-# Groeßter gemeinsamer Teiler für arrays
-def gcd_array(array):
-
-    ggt = []
-    n = len(array)
-    for i in range(n):
-        for j in range(n):
-            ggt.append(gcd(array[i],array[j]))
-            
-    ggt = np.asarray(ggt)
-    return min(ggt)
-
-# Passt die Rundung von Werten an die Fehler an, erzeugt strings fertig für tabellen--üBERFLÜSSIG! WURDE ERSETZT DURCH error_round
-def errorRound(x, xerr):
-    print('veraltet: benutze stattdessen error_round()')
-    new_x = [0]*len(x)
-    new_x_err = [0]*len(x)
-    err_str = [0]*len(x)
-    if len(x) == len(xerr):
-        for i in range(len(x)):
-            floatxerr = xerr.astype(np.float64)                             # ändert type zu float64, weil roundup funktion nicht mit int funktioniert
-            errstring = np.format_float_positional(xerr[i])                 # Fehler als String
-
-            #-- rundet Fehler ---
-            k = 0
-            while (errstring[k] != '.'):
-                k += 1
-            if (errstring[0] == '1' or errstring[0] == '0'):
-                k -= 1
-            if errstring[0] == '1' and k == 0:
-
-                new_x_err[i] = roundup(floatxerr[i],1)      # rundet einstelligen Zahlen
-
-                if int(new_x_err[i]) == new_x_err[i]:
-                    new_x_err[i] = int(new_x_err[i])   # falls ganzzahlig wird zu int konvertiert
-                else:
-                    k += 1
-
-            elif (k != 0):
-                k = -k
-                new_x_err[i] = int(roundup(floatxerr[i],k+1))   # rundet alle Zahlen > 1 auf
-                if errstring[0] == '1' and str(new_x_err[i])[0] != '1':
-                    k -= 1
-
-            else:
-                #print('float',new_x_err[i])
-                k = 2                                          # rundet fließkommazahlen < 1
-                
-                while errstring[k] == '0':
-                    k += 1
-                k -= 1
-                if errstring[k+1] == '1' and round(xerr[i],k) != xerr[i]:
-                    new_x_err[i] = roundup(floatxerr[i],k+1)
-                    k += 1
-                else:
-                    new_x_err[i] = roundup(floatxerr[i],k)
-                
-                errstring = np.format_float_positional(new_x_err[i])
-                k = len(errstring) - 2
-               
-                if new_x_err[i] == int(new_x_err[i]):
-                    k = 0                                      # setzt rundungsstelle auf 0, wenn fehler auf 1 gerundet wird
-            err_str[i] = np.format_float_positional(new_x_err[i])  
-            
-            if new_x_err[i] == int(new_x_err[i]):
-                err_str[i] = str(int(new_x_err[i]))
-                new_x_err[i] = int(new_x_err[i])
-
-            #print(k)
-            #--passt nachkommastelle der werte an fehler
-            errstring = np.format_float_positional(new_x_err[i])     
-            
-            if k >= 0:
-                new_x[i] = round(x[i],k)
-                numformat = '{:.'+str(k)+'f}'
-                new_x[i] = numformat.format(new_x[i])
-            else:
-                new_x[i] = round(x[i],k+1)
-                numformat = '{:.'+str(0)+'f}'
-                new_x[i] = str(int(new_x[i]))
-        
-    else:
-        print('errorRound: arrays must have same length')
-
-    return new_x, err_str
 
 def error_round(x, xerr, error_mode = 'plus-minus', get_float = False):
 

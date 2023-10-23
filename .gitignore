@@ -6,3 +6,4 @@ monke/__pycache__/functions.cpython-39.pyc
 monke/__pycache__/functions.cpython-310.pyc
 dist/
 .vscode/
+test.*
