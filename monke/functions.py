@@ -1,7 +1,4 @@
-import kafe2
 import numpy as np
-import math
-from texfile import Texfile
 import pandas as pd
 
 # ERROR STYLE ENUM
@@ -59,9 +56,9 @@ def mittel_varianzgewichtet(val, val_err):
     # return (sigma*val).sum()
 
 
-def chisquare(f, x, y, yerr, *params) -> float:
+def chisquare(f, x, y, yerr, params: list[float]) -> float:
     """Berechnet das X² pro Freiheitsgrad für eine Funktion f mit parametern <params>
-    f: hat die Form f(*params, x)
+    f: hat die Form f(params, x)
     x: ist ein Array der unabhängigen Variable
     y: ist ein Array der von x abhängigen Variable
     yerr: Fehler von y, kann ein Array oder ein skalarer Wert sein"""
@@ -80,7 +77,7 @@ def chisquare(f, x, y, yerr, *params) -> float:
 
     x, y, yerr = np.array(x), np.array(y), np.array(yerr)
 
-    chi_square = np.sum((y - f(*params, x=x))**2 / yerr**2)
+    chi_square = np.sum((y - f(params, x))**2 / yerr**2)
     return chi_square / (len(x) - len(params))
 
 
@@ -466,26 +463,22 @@ def __test_chisquare():
     y = np.array([1, 2, 3, 4])
     yerr = 1
 
-    func = lambda *params, x: x * params[0] + params[1]
+    def func(params, x): return x * params[0] + params[1]
 
-    chi = chisquare(func, x[0], y, yerr, 1, 0)
+    chi = chisquare(func, x[0], y, yerr, [1, 0])
     assert (chi == 0)
 
     x = pd.DataFrame([1.2, 1.7, 3.5, 4.1])
     y = np.array([1, 2, 3, 4])
     yerr = [0.3, 0.1, 0.5, 0.5]
-
-    res = kafe2.xy_fit("linear", x[0], y, y_error=yerr)
-    m, b = res["parameter_values"]["a"], res["parameter_values"]["b"]
-    chi = chisquare(func, x[0], y, yerr, m, b)
     print("chisquare: test passed!")
 
-def __test_error_round():
-    assert(error_round(0.4, 0.23)==("0.4", "0.3"))
-    print("2.4".replace(".", ","))
 
+def __test_error_round():
+    assert (error_round(0.4, 0.23) == ("0.4", "0.3"))
 
     print("error_round: test passed!")
+
 
 if __name__ == "__main__":
     __test_chisquare()
