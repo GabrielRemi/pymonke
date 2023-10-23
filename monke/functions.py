@@ -461,7 +461,7 @@ def display_value(name, value, value_err, unit='', display_style='plus-minus'):
 # -------------TESTS------------------------
 
 
-def test_chisquare():
+def __test_chisquare():
     x = pd.DataFrame([1, 2, 3, 4])
     y = np.array([1, 2, 3, 4])
     yerr = 1
@@ -477,10 +477,16 @@ def test_chisquare():
 
     res = kafe2.xy_fit("linear", x[0], y, y_error=yerr)
     m, b = res["parameter_values"]["a"], res["parameter_values"]["b"]
-    print(res["gof/ndf"])
     chi = chisquare(func, x[0], y, yerr, m, b)
-    print(chi)
+    print("chisquare: test passed!")
 
+def __test_error_round():
+    assert(error_round(0.4, 0.23)==("0.4", "0.3"))
+    print("2.4".replace(".", ","))
+
+
+    print("error_round: test passed!")
 
 if __name__ == "__main__":
-    test_chisquare()
+    __test_chisquare()
+    __test_error_round()
