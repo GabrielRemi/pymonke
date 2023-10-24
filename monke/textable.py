@@ -5,7 +5,7 @@ import numbers
 class Textable():
     __instance = (list, np.ndarray)
     
-    def __init__(self, caption: str="caption", label: str=None, error_style: str = "parenthesis", seperator=".", caption_above=False):
+    def __init__(self, caption: str="caption", label: str=None, caption_above=False):
         self.caption = caption
         self.label = label
         self.table_str = ""
@@ -14,11 +14,9 @@ class Textable():
         self.content_str = ""
         self.alignment = None
         self.header = ""
-        self.error_style: str = error_style
         self.lines_before_header: list[str] = []
         self.upper_line = True
         self.bottom_line = True
-        self.seperator = seperator
         self.caption_above = caption_above
         
     @property
@@ -75,25 +73,16 @@ class Textable():
             for j, array in enumerate(args):
                 if i < self.array_lengths[j]:
                     if isinstance(array, self.__instance):
-                        if isinstance(array[i], numbers.Number):
-                            self.content_str += f'${array[i]}$'.replace(".", self.seperator)
-                        else:
+                        try:
+                            float(array[i])
+                            self.content_str += f'$\\num{{{array[i]}}}$'
+                        except ValueError:
                             self.content_str += f'{array[i]}'
                     if isinstance(array, tuple):
                         value = array[0][i]
                         error = array[1][i]
-                        if self.error_style == "plus-minus":
-                            rounded_value_and_error = error_round(value, error)
-                            self.content_str += f'${rounded_value_and_error[0]} \\pm {rounded_value_and_error[1]}$'.replace(".", self.seperator)
-                        elif self.error_style == "parenthesis":
-                            round_value = error_round(value, error, error_mode="parenthesis")
-                            self.content_str += f'${round_value}$'.replace(".", self.seperator)
-                        elif self.error_style == "scientific":
-                            round_value = error_round(value, error, "scientific")[0]
-                            self.content_str += f'${round_value}$'.replace(".", self.seperator)
-                        else:
-                            print("Latextable: Could not find ErrorStyle", f'ErrorStyle = {self.error_style}')
-                            exit(-1)
+                        rounded_value_and_error = error_round(value, error)
+                        self.content_str += f'$\\num{{{rounded_value_and_error[0]}\\pm {rounded_value_and_error[1]}}}$'
                 else:
                     self.content_str += "  "
                     
@@ -186,7 +175,8 @@ if __name__ == "__main__":
     """Erstelle eine Test Tabelle"""
     x = [1, 2.3, 3, 1.2345, 12.2345234]
     y = ["Eins", "Zwei", "Drei", "Vier", "Fünf"]
+    z = ["1.0", "4.2", "24"]
     xerr = [0.1, 0.4465, 10, 4.234, 0.0062]
-    table = Textable("Test Caption", "Test Label", seperator=",", error_style="plus-minus", caption_above=True)
-    table.add_values((x, xerr), y)
+    table = Textable("Test Caption", "Test Label", caption_above=True)
+    table.add_values((x, xerr), y, z)
     print(table.make_figure(table))
