@@ -1,10 +1,11 @@
 import numpy as np
-from functions import error_round, ErrorStyle
+from functions import error_round
+import numbers
 
 class Textable():
     __instance = (list, np.ndarray)
     
-    def __init__(self, caption: str="caption", label: str=None, error_style: str = "parenthesis", seperator="."):
+    def __init__(self, caption: str="caption", label: str=None, error_style: str = "parenthesis", seperator=".", caption_above=False):
         self.caption = caption
         self.label = label
         self.table_str = ""
@@ -18,6 +19,7 @@ class Textable():
         self.upper_line = True
         self.bottom_line = True
         self.seperator = seperator
+        self.caption_above = caption_above
         
     @property
     def error_style(self) -> str:
@@ -128,16 +130,25 @@ class Textable():
             self.lines_after_values.append("\\hline")
                 
     def _make_table(self):
-        self.table_str = f"\\begin{{tabular}}{{{self.alignment}}}\n"
+        self.table_str = ""
+        caption: str = f"\\caption{{{self.caption}}}\n"
+        if self.caption_above:
+            self.table_str += caption
+
+        self.table_str += f"\\begin{{tabular}}{{{self.alignment}}}\n"
         if self.upper_line:
             self.table_str += "\\hline"
         for line in self.lines_before_header:
             self.table_str += f'{line}\n'
         self.table_str += f'{self.header}\hline\n'
         self.table_str += self.content_str
+
         if self.bottom_line:
             self.table_str += "\\hline"
-        self.table_str += f"\\end{{tabular}}\n\\caption{{{self.caption}}}\n"
+        self.table_str += f"\\end{{tabular}}\n"
+
+        if not self.caption_above:
+            self.table_str += caption
         if self.label:
             self.table_str += f"\\label{{{self.label}}}\n"
     
@@ -171,12 +182,11 @@ class Textable():
     
 if __name__ == "__main__":
     import pandas as pd
-    import numbers
 
     """Erstelle eine Test Tabelle"""
     x = [1, 2.3, 3, 1.2345, 12.2345234]
     y = ["Eins", "Zwei", "Drei", "Vier", "Fünf"]
     xerr = [0.1, 0.4465, 10, 4.234, 0.0062]
-    table = Textable("Test Caption", "Test Label", seperator=",", error_style="plus-minus")
+    table = Textable("Test Caption", "Test Label", seperator=",", error_style="plus-minus", caption_above=True)
     table.add_values((x, xerr), y)
-    print(table.table_str)
+    print(table.make_figure(table))

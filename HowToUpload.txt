@@ -1,5 +1,5 @@
 - Verzeichnis 'Documents\Python Scripts\Monke'
-- im Terminal im Paketverzeichnis: <python -m build>
-- danach: <python -m twine upload --repository pypi dist/*>
+- im Terminal im Paketverzeichnis: <python3 -m build>
+- danach: <python3 -m twine upload --repository pypi dist/*>
 
 Username: GabrielRemi
