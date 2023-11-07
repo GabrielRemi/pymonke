@@ -26,6 +26,12 @@ class Texfile:
                 self.objects.remove(obj)
                 return
             
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.make()
+            
     
     def delete(self):
         global in_dir
@@ -37,3 +43,8 @@ class Texfile:
         for file in files:
             if file == self.name:     
                 os.remove(self.name)
+                
+                
+if __name__ == "__main__":
+    with Texfile("testfile", "../") as file:
+        file.add("HEllo World")

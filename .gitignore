@@ -7,3 +7,4 @@ monke/__pycache__/functions.cpython-310.pyc
 dist/
 .vscode/
 test.*
+monke2.egg-info/*

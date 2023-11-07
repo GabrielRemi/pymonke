@@ -1,6 +1,6 @@
+import numbers
 import numpy as np
 from functions import error_round
-import numbers
 
 class Textable():
     __instance = (list, np.ndarray)
@@ -146,7 +146,7 @@ class Textable():
             self und other beide in die gleiche figure Umgebung, damit zwei Objekte im Dokument nebeneinander 
             angezeigt werden können. Benutze dafür den parbox Befehl"""
             
-        figure_str = f"\\begin{{figure}}[{self.fig_mode}]\n   \\centering\n"
+        figure_str = f"\\begin{{table}}[{self.fig_mode}]\n   \\centering\n"
         if not other:
             figure_str += self.table_str
         else:
@@ -166,7 +166,7 @@ class Textable():
                 else:
                     exit(-1)
             figure_str += "}"
-        figure_str += "\\end{figure}"
+        figure_str += "\\end{table}"
         return figure_str
     
 if __name__ == "__main__":
@@ -179,4 +179,7 @@ if __name__ == "__main__":
     xerr = [0.1, 0.4465, 10, 4.234, 0.0062]
     table = Textable("Test Caption", "Test Label", caption_above=True)
     table.add_values((x, xerr), y, z)
-    print(table.make_figure(table))
+    
+    from texfile import Texfile
+    with Texfile("test", "../") as file:
+        file.add(table.make_figure())
