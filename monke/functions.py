@@ -10,11 +10,6 @@ class ErrorStyle(Enum):
     PARENTHESIS = 2
     SCIENTIFIC = 3
 
-    def __eq__(self, other):
-        if not isinstance(other, self.__class__):
-            return False
-        return self.value == other.value
-
 
 def roundup(x, r=2):
     a = x*10**r
@@ -81,7 +76,7 @@ def chisquare(f, x, y, yerr, params: list[float]) -> float:
     return chi_square / (len(x) - len(params))
 
 
-def error_round(x, xerr, error_mode='plus-minus', get_float=False):
+def error_round(x, xerr, error_mode: ErrorStyle = ErrorStyle.PLUSMINUS, get_float=False):
 
     if isinstance(x, (int, float)):
         x = [x]
@@ -138,7 +133,7 @@ def error_round(x, xerr, error_mode='plus-minus', get_float=False):
             new_x[i] = -new_x[i]
             x_str[i] = x_str[i][1:]
 
-    if error_mode == 'plus-minus':
+    if error_mode == ErrorStyle.PLUSMINUS:
         if get_float == False:
             if len(x) != 1:
                 return x_str, xerr_str
@@ -149,7 +144,7 @@ def error_round(x, xerr, error_mode='plus-minus', get_float=False):
                 return [float(i) for i in x_str], [float(i) for i in xerr_str]
             else:
                 return float(x_str[0]), float(xerr_str[0])
-    elif error_mode == 'parenthesis':
+    elif error_mode == ErrorStyle.PARENTHESIS:
         result = []
         for j, i in enumerate(xerr_str):
 
@@ -162,7 +157,7 @@ def error_round(x, xerr, error_mode='plus-minus', get_float=False):
         else:
             return result[0]
 
-    elif error_mode == 'scientific':
+    elif error_mode == ErrorStyle.SCIENTIFIC:
         res = []
         e_list = []   # Liste aller Potenzen
         for i, j in enumerate(x_str):
@@ -223,164 +218,9 @@ def error_round(x, xerr, error_mode='plus-minus', get_float=False):
             return res[0], e_list[0]
 
 
-# Erstellt Wertetabellen, die in LaTeX eingefügt werden können
-def make_table(array, header='', align='', caption=None, label=None, latex=True, transpose=False, error_mode='plus-minus') -> str:
-    try:
-        from texttable import Texttable
-        from latextable import draw_latex
-    except:
-        print('error: für make_table müssen die Pakete texttable und latextable installiert werden')
-
-    num = len(array)                        # Anzahl der Spalten
-
-    try:
-        # Anzahl der Reihen, falls erstes Element 2d ist
-        length = np.shape(array[0])[1]
-    except:
-        # Anzahl der Reihen, falls erstes Element 1d ist
-        length = len(array[0])
-
-    if align == '':
-        align = ['c'] * num
-    if header == '':
-        list = [0] * num
-        for i in range(num):
-            list[i] = str(i+1)
-        header = list
-
-    # kontroliiert die Dimensionen der Listen
-    if len(align) != len(header) or len(header) != len(array):
-        print('error: align und header und array benötigen die selben Dimensionen')
-        return
-
-    k = np.zeros(num)
-    # arg = [[0]*num, ['False']*num]
-    # gibt k = 2, wenn as Array 2-dim ist, k = 1 für 1-dim arrays
-    for i, j in enumerate(array):
-        try:
-            k[i] = np.shape(j)[1]
-            k[i] = 2
-
-        except IndexError:
-            k[i] = 1
-
-    for i in range(num):
-        if k[i] == 2:
-            array[i][0], array[i][1] = error_round(array[i][0], array[i][1])
-
-    table = Texttable()
-
-    if transpose is True:
-
-        table.set_cols_align(['c'] * (length+1))
-        table.set_cols_dtype(['t'] * (length+1))
-        for i in range(num):
-            list = []
-            list.append(header[i])
-            for l in range(length):
-                if k[i] == 1:
-                    list.append(array[i][l])
-                elif k[i] == 2:
-                    list.append(f'${array[i][0][l]}\\pm {array[i][1][l]}  $')
-            table.add_row(list)
-
-    else:
-        table.header(header)
-        table.set_cols_align(align)
-        table.set_cols_dtype(['t']*num)
-        for i in range(length):
-            list = [0]*num
-            for l, m in enumerate(k):
-                if m == 1:
-
-                    list[l] = array[l][i]
-
-                elif m == 2 and error_mode == 'plus-minus':
-
-                    list[l] = '$' + array[l][0][i] + \
-                        '\\pm ' + array[l][1][i] + '$'
-
-                elif m == 2 and error_mode == 'parenthesis':
-                    value = float(array[l][0][i])
-                    error = array[l][1][i]
-                    error = error.replace('.', '')
-
-                    while error[0] == '0':
-                        error = error[1:]
-                    list[l] = f'${array[l][0][i]}({error})$'
-
-                elif m == 2 and error_mode == 'scientific':
-
-                    value = float(array[l][0][i])
-                    error = float(array[l][1][i])
-
-                    res, e = error_round(value, error, error_mode='scientific')
-
-                    while 'e' in res:
-                        res = res[:-1]
-                    if e != 0:
-                        list[l] = f'${res}\\times 10^\u007b{e}\u007d$'
-                    else:
-                        list[l] = f'${res}$'
-
-            table.add_row(list)
-    if latex == True:
-        text = draw_latex(table, caption=caption, label=f'fig:{label}')
-
-        # entfernt bei transponierter tabelle die erste Leere Zeile
-        if transpose == True:
-            to_delete = '\n\t\t\t\\hline\n\t\t\t \\\\'
-            text = text.replace(to_delete, '')
-
-        # with open('data.tex','a') as file:
-        #     file.write(f'{text}\n')
-
-    else:
-        print(table.draw())
-
-    return text
-
-
-def write_csv(values, header='', name='data'):
-    import csv
-
-    column = len(values)
-
-    try:
-        rows = np.shape(values)[1]
-    except:
-        rows = len(values)
-
-    name = name + '.csv'
-
-    with open(name, 'w', newline='') as csvfile:
-
-        writer = csv.writer(csvfile, delimiter=',')
-
-        # Mache erste Zeile mit bezeichnungen
-        if header == '':
-            firstrow = np.asarray(range(column))+1
-        else:
-            firstrow = header
-        writer.writerow(firstrow)
-
-        for row in range(rows):
-
-            list = [0]*column
-
-            for col in range(column):
-                list[col] = values[col][row]
-
-            writer.writerow(list)
-
-    print(f'Datei {name} wurde gespeichert')
-
-# passe die Nachkommastellen in einem array an
-
-
 def round_align(list):
     n = 0    # die Anzahl der Arrays
-    num = 0  # Anzahl der Elemnte pro Array
+    num = 0  # Anzahl der Elemente pro Array
     try:
         num = np.shape(list)[1]
         n = np.shape(list)[0]
@@ -415,23 +255,6 @@ def round_align(list):
         return list_sci[0]
     else:
         return list_sci
-
-
-# erstellt nötige Dateien, um Plots und Tabellen in latex einfügen zu können
-def create_tex():
-    with open('standard_pakete.sty', 'w') as file:
-        text1 = '\\RequirePackage[utf8]{inputenc}\n\\RequirePackage{amsmath}\n\\RequirePackage{amssymb}\n\\RequirePackage[ngerman]{babel}'
-        text2 = '\n\\RequirePackage[T1]{fontenc}\n\\RequirePackage{newtxtext,newtxmath,siunitx}'
-        text3 = '\n\\sisetup{locale = DE,sticky-per,\nrange-phrase = -,range-units= single}\n\\RequirePackage{mathtools,graphicx}\n\\usepackage[margin=.5cm]{geometry}'
-        file.write(text1+text2+text3)
-
-    with open('data.tex', 'w') as file:
-        file.write('')
-
-    with open('main.tex', 'w') as main:
-        text1 = '\\documentclass[ngerman]{scrartcl}\n\\usepackage{standard_pakete}\n\n\\title{Titel}\n\\author{author}\n'
-        text2 = '\\begin{document}\n\n\\include{data.tex}\n\n\\end{document}'
-        main.write(text1 + text2)
 
 
 def display_value(name, value, value_err, unit='', display_style='plus-minus'):
