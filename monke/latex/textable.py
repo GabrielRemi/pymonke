@@ -120,7 +120,7 @@ class TexTable:
             self.lines_before_header.append("\\hline")
             
     def end_with_hline(self, num=1):
-        """Ende die Tabelle with num x \\hline Befehlen"""
+        """Ende die Tabelle with num __x \\hline Befehlen"""
         for _ in range(num):
             self.lines_after_values.append("\\hline")
                 

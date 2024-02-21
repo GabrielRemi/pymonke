@@ -40,7 +40,7 @@ def roundup_two_significant_digits(x: float) -> float:
 
 
 def error_round(x, xerr, error_mode: ErrorStyle = ErrorStyle.PLUSMINUS, get_float=False) -> Any:
-    """rounds xerr to at most 2 significant numbers and rounds x to the same position. Outputs the
+    """rounds xerr to at most 2 significant numbers and rounds __x to the same position. Outputs the
     numbers as strings. The return type is determined by error_mode."""
 
     if isinstance(x, (int, float)):

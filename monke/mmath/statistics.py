@@ -26,16 +26,16 @@ def mittel_varianzgewichtet(val, val_err):
 
 def chisquare(f, x, y, yerr, params: list[float]) -> float:
     """Berechnet das X² pro Freiheitsgrad für eine Funktion f mit parametern <params>
-    f: hat die Form f(params, x)
-    x: ist ein Array der unabhängigen Variable
-    y: ist ein Array der von x abhängigen Variable
+    f: hat die Form f(params, __x)
+    __x: ist ein Array der unabhängigen Variable
+    y: ist ein Array der von __x abhängigen Variable
     yerr: Fehler von y, kann ein Array oder ein skalarer Wert sein"""
 
     try:
         iter(x)
         iter(y)
     except TypeError:
-        print("x and/ or y not an iterable")
+        print("__x and/ or y not an iterable")
         exit(-1)
 
     try:

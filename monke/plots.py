@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 from matplotlib import container
 import numpy as np
 
-errbar=[7,5,1,1,'x']
+errbar=[7,5,1,1,'__x']
 
 def plots(figsize=(6,4)):
     fig, ax = plt.subplots(figsize=figsize,dpi=120)
     return ax
 
-def errorbar(ax, x_val,y_val,y_err,x_err=[0],errbar=[7,5,1,1], marker = 'x', color = 'tab:red',line='',label='Daten', zorder = 2):
+def errorbar(ax, x_val,y_val,y_err,x_err=[0],errbar=[7,5,1,1], marker = '__x', color = 'tab:red',line='',label='Daten', zorder = 2):
     
 
     if isinstance(x_err,(list,np.ndarray)) == False:

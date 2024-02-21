@@ -5,7 +5,7 @@ from monke.mmath import NumWithError
 
 class MyTestCase(unittest.TestCase):
     def test_num_with_error_eq(self):
-        self.assertEqual(NumWithError(2.234, 0.123), NumWithError(2.23, 1.3))  # add assertion here
+        self.assertEqual(NumWithError(2.234, 0.123), NumWithError(2.23, 0.13))  # add assertion here
         self.assertEqual(NumWithError(2.234, 0.14234), NumWithError(2.23, 0.15))
         self.assertEqual(NumWithError(2, 0.14234), NumWithError(2.00, 0.15))
         self.assertEqual(NumWithError(2, 0.16234), NumWithError(2.00, 0.17))
@@ -19,6 +19,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(NumWithError(0.8234, 103.814123), NumWithError(0, 110))
         self.assertEqual(NumWithError(0.8234, 110.0002), NumWithError(0, 120))
         self.assertEqual(NumWithError(1423.12341287, 103.814123), NumWithError(1420, 110))
+        self.assertEqual(NumWithError(-2.3, 0.223), NumWithError(-2.3, 0.3))
 
     def test_num_with_error_values(self):
         self.assertEqual(NumWithError(2.234, 0.14234).get_values(), (2.23, 0.15))
@@ -39,6 +40,16 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(
             NumWithError([2.234, 2, 2], [0.14234, 0.14234, 0.16234]).get_values(),
             ([2.23, 2.00, 2.00], [0.15, 0.15, 0.17]))
+
+    def test_num_with_error_raise(self):
+        with self.assertRaises(ValueError):
+            NumWithError(23, "not a number")
+            NumWithError("not a number", 23)
+            NumWithError([2.234, 2, "asd"], [0.14234, 0, 123])
+            NumWithError([2, 3, 4], [0.14234, 0])
+            NumWithError([2, 3], [0.14234, 0, 0.123])
+            NumWithError(2, -0.123)
+            NumWithError(-1.23, 0)
 
 
 if __name__ == '__main__':

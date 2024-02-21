@@ -13,6 +13,9 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(f(0.100123), 0.11)
         self.assertEqual(f(1234.2345), 1300)
         self.assertEqual(f(2234.2345), 3000)
+        self.assertEqual(f(0.9), 0.9)
+        self.assertEqual(f(0.8789789), 0.9)
+        self.assertEqual(f(0.90234), 1.)
 
 
 if __name__ == '__main__':
