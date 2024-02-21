@@ -8,3 +8,4 @@ dist/
 .vscode/
 test.*
 monke2.egg-info/*
+venv

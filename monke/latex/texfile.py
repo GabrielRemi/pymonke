@@ -1,6 +1,8 @@
 import os
 
-class Texfile:
+
+class TexFile:
+    """creates a LaTeX file, in which you can add strings"""
     def  __init__(self, name: str, path: str=""):
         self.name = f'{name}.tex'
         self.path = path
@@ -46,5 +48,5 @@ class Texfile:
                 
                 
 if __name__ == "__main__":
-    with Texfile("testfile", "../") as file:
+    with TexFile("testfile", "../../") as file:
         file.add("HEllo World")

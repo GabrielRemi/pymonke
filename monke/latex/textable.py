@@ -1,8 +1,14 @@
-import numbers
 import numpy as np
-from functions import error_round
 
-class Textable():
+import pathlib
+
+from monke.mmath.statistics import error_round
+
+__parent_dir = pathlib.Path(__file__).parent.resolve()
+# sys.path.append((str(__parent_dir.parent)))
+
+
+class TexTable:
     __instance = (list, np.ndarray)
     
     def __init__(self, caption: str="caption", label: str=None, caption_above=False):
@@ -156,7 +162,7 @@ class Textable():
             figure_str += f"\\parbox{{{width}\\linewidth}}{'{'}\\centering\n"
             figure_str += self.table_str
             for elem in other:
-                if isinstance(elem, Textable):
+                if isinstance(elem, TexTable):
                     if not hspace:
                         figure_str += "}\\quad"
                     else:
@@ -170,16 +176,14 @@ class Textable():
         return figure_str
     
 if __name__ == "__main__":
-    import pandas as pd
-
     """Erstelle eine Test Tabelle"""
     x = [1, 2.3, 3, 1.2345, 12.2345234]
     y = ["Eins", "Zwei", "Drei", "Vier", "Fünf"]
     z = ["1.0", "4.2", "24"]
     xerr = [0.1, 0.4465, 10, 4.234, 0.0062]
-    table = Textable("Test Caption", "Test Label", caption_above=True)
+    table = TexTable("Test Caption", "Test Label", caption_above=True)
     table.add_values((x, xerr), y, z)
     
-    from texfile import Texfile
-    with Texfile("test", "../") as file:
+    from monke.latex.texfile import TexFile
+    with TexFile("test", "../../") as file:
         file.add(table.make_figure())

@@ -1,17 +1,11 @@
 import numpy as np
-import pandas as pd
+from typing import Any, List
 
-# ERROR STYLE ENUM
-from enum import Enum
-
-
-class ErrorStyle(Enum):
-    PLUSMINUS = 1
-    PARENTHESIS = 2
-    SCIENTIFIC = 3
+from error_style import ErrorStyle
 
 
 def roundup(x, r=2):
+    """rounds up a number to the decimal place r"""
     a = x*10**r
     a = np.ceil(a)
     a = a*10**(-r)
@@ -33,50 +27,21 @@ def roundup(x, r=2):
     return np.around(a, r)
 
 
-def varianz_xy(x, y):
-    x_mean = np.mean(x)
-    y_mean = np.mean(y)
-    return (1/len(x))*((x-x_mean)*(y-y_mean)).sum()
+def roundup_two_significant_digits(x: float) -> float:
+    """rounds the given number up to 2 significant digits"""
+    scientific: List[str] = "{:e}".format(x).split("e")
+    value, exponent = float(scientific[0]), int(scientific[1])
+    if value < 2:
+        value = roundup(value, 1)
+    else:
+        value = roundup(value, 0)
+
+    return float(f"{value}e{exponent}")
 
 
-def varianz_x(x):
-    x_mean = np.mean(x)
-    return (1/len(x))*((x-x_mean)**2).sum()
-
-
-def mittel_varianzgewichtet(val, val_err):
-    return (val/(val_err**2)).sum()/(1/(val_err**2)).sum()
-    # --test--
-    # sigma = val_err/(val_err.sum())
-    # return (sigma*val).sum()
-
-
-def chisquare(f, x, y, yerr, params: list[float]) -> float:
-    """Berechnet das X² pro Freiheitsgrad für eine Funktion f mit parametern <params>
-    f: hat die Form f(params, x)
-    x: ist ein Array der unabhängigen Variable
-    y: ist ein Array der von x abhängigen Variable
-    yerr: Fehler von y, kann ein Array oder ein skalarer Wert sein"""
-
-    try:
-        iter(x)
-        iter(y)
-    except TypeError:
-        print("x and/ or y not an iterable")
-        exit(-1)
-
-    try:
-        iter(yerr)
-    except:
-        yerr = [yerr] * len(x)
-
-    x, y, yerr = np.array(x), np.array(y), np.array(yerr)
-
-    chi_square = np.sum((y - f(params, x))**2 / yerr**2)
-    return chi_square / (len(x) - len(params))
-
-
-def error_round(x, xerr, error_mode: ErrorStyle = ErrorStyle.PLUSMINUS, get_float=False):
+def error_round(x, xerr, error_mode: ErrorStyle = ErrorStyle.PLUSMINUS, get_float=False) -> Any:
+    """rounds xerr to at most 2 significant numbers and rounds x to the same position. Outputs the
+    numbers as strings. The return type is determined by error_mode."""
 
     if isinstance(x, (int, float)):
         x = [x]
@@ -255,54 +220,3 @@ def round_align(list):
         return list_sci[0]
     else:
         return list_sci
-
-
-def display_value(name, value, value_err, unit='', display_style='plus-minus'):
-
-    if all([isinstance(i, (float, int)) for i in [value, value_err]]):
-        x, y = error_round(value, value_err)
-        result = None
-
-        if display_style == 'plus-minus':
-            result = f'({x} +- {y})'
-        elif display_style == 'parenthesis':
-            result = error_round(value, value_err, 'parenthesis')
-
-        try:
-            percentage = round(float(y)/float(x)*1e2, 2)
-            print(f'{name}: {result} {unit} {percentage}% Fehler')
-        except ZeroDivisionError:
-            print(f'{name}: {result} {unit}')
-    else:
-        print(
-            'display_value: value und value_err müssen floats oder ints sein, keine Arrays')
-
-
-# -------------TESTS------------------------
-
-
-def __test_chisquare():
-    x = pd.DataFrame([1, 2, 3, 4])
-    y = np.array([1, 2, 3, 4])
-    yerr = 1
-
-    def func(params, x): return x * params[0] + params[1]
-
-    chi = chisquare(func, x[0], y, yerr, [1, 0])
-    assert (chi == 0)
-
-    x = pd.DataFrame([1.2, 1.7, 3.5, 4.1])
-    y = np.array([1, 2, 3, 4])
-    yerr = [0.3, 0.1, 0.5, 0.5]
-    print("chisquare: test passed!")
-
-
-def __test_error_round():
-    assert (error_round(0.4, 0.23) == ("0.4", "0.3"))
-
-    print("error_round: test passed!")
-
-
-if __name__ == "__main__":
-    __test_chisquare()
-    __test_error_round()

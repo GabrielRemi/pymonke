@@ -1,9 +1,9 @@
-import functions, pathlib, os, shutil
+from monke.mmath import ErrorStyle, error_round
+import monke.mmath as math
 
-base_dir = os.getcwd()
-dir = pathlib.Path(functions.__file__).resolve().parent
-source_path = f'{dir}\\README.txt.py'
-destination_path = f'{base_dir}\\README.txt'
-shutil.copy(source_path, destination_path)
+def func(a: int = 1, l: list = []):
 
-print('Readme file copied')
+    print(error_round(0.000234245234, 0.123e-6, ErrorStyle.PLUSMINUS, True))
+
+
+func()
