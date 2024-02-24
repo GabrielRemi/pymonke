@@ -37,23 +37,25 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(NumWithError(1423.12341287, 103.814123).get_values(), (1420, 110))
 
     def test_num_with_error_display_separate(self):
+        self.assertEqual(NumWithError(2.234, 0.14234).display_separate(), r"\num{2.23 +- 0.15}")
+        self.assertEqual(NumWithError(2, 0.14234).display_separate(), r"\num{2.00 +- 0.15}")
+        self.assertEqual(NumWithError(2, 0.16234).display_separate(), r"\num{2.00 +- 0.17}")
+        self.assertEqual(NumWithError(2.234123, 0.16234).display_separate(), r"\num{2.23 +- 0.17}")
+        self.assertEqual(NumWithError(2.234123, 0.19934).display_separate(), r"\num{2.20 +- 0.20}")
+        self.assertEqual(NumWithError(0.9, 0.99).display_separate(), r"\num{1.0 +- 1.0}")
+        self.assertEqual(NumWithError(10.8567, 0.99).display_separate(), r"\num{11.0 +- 1.0}")
+        self.assertEqual(NumWithError(114.123, 10.89123).display_separate(), r"\num{114.0 +- 11.0}")
+        self.assertEqual(NumWithError(0.8234, 10.914123).display_separate(), r"\num{1.0 +- 11.0}")
+        self.assertEqual(NumWithError(0.08234, 10.914123).display_separate(), r"\num{0.0 +- 11.0}")
+        self.assertEqual(NumWithError(0.8234, 103.814123).display_separate(), r"\num{0.0 +- 110.0}")
+        self.assertEqual(NumWithError(0.8234, 110.0002).display_separate(), r"\num{0.0 +- 120.0}")
+        self.assertEqual(NumWithError(1423.12341287, 103.814123).display_separate(), r"\num{1420.0 +- 110.0}")
+        self.assertEqual(NumWithError(0.000_000_000_712_312, 0.000_000_000_051_512_123).display_separate(),
+                         r"\num{0.000000000710 +- 0.000000000060}")
 
-        self.assertEqual(NumWithError(2.234, 0.14234).display_separate(), "2.23 +- 0.15")
-        self.assertEqual(NumWithError(2, 0.14234).display_separate(), "2.00 +- 0.15")
-        self.assertEqual(NumWithError(2, 0.16234).display_separate(), "2.00 +- 0.17")
-        self.assertEqual(NumWithError(2.234123, 0.16234).display_separate(), "2.23 +- 0.17")
-        self.assertEqual(NumWithError(2.234123, 0.19934).display_separate(), "2.20 +- 0.20")
-        self.assertEqual(NumWithError(0.9, 0.99).display_separate(), "1.0 +- 1.0")
-        self.assertEqual(NumWithError(10.8567, 0.99).display_separate(), "11.0 +- 1.0")
-        self.assertEqual(NumWithError(114.123, 10.89123).display_separate(), "114.0 +- 11.0")
-        self.assertEqual(NumWithError(0.8234, 10.914123).display_separate(), "1.0 +- 11.0")
-        self.assertEqual(NumWithError(0.08234, 10.914123).display_separate(), "0.0 +- 11.0")
-        self.assertEqual(NumWithError(0.8234, 103.814123).display_separate(), "0.0 +- 110.0")
-        self.assertEqual(NumWithError(0.8234, 110.0002).display_separate(), "0.0 +- 120.0")
-        self.assertEqual(NumWithError(1423.12341287, 103.814123).display_separate(), "1420.0 +- 110.0")
-        self.assertEqual(
-            NumWithError(0.000_000_000_712_312, 0.000_000_000_051_512_123).display_separate(),
-            "0.000000000710 +- 0.000000000060")
+        self.assertEqual(NumWithError(2.23e1, 14e1).display_separate("round-precision=1"),
+                         r"\num[round-precision=1]{20.0 +- 140.0}")
+        self.assertEqual(NumWithError(2.234, 0.14234).display_table_separate(), r"\tablenum{2.23 +- 0.15}")
 
     def test_num_with_error_raise(self):
         with self.assertRaises(TypeError):

@@ -43,16 +43,27 @@ class NumWithError:
     def get_values(self) -> Tuple[float, float]:
         return self.__x, self.__x_error
 
-    def display_separate(self) -> str:
+    def display_table_separate(self, option: str = None) -> str:
         """outputs a string with the number and uncertainty separated by '+-' in a <num> block.
-        This functionality is meant to be used for work in latex with the siunitx package."""
+        This functionality is meant to be used for work with tabular in latex with the siunitx package.
+        Can add an optional string, which will be added the following way: \tablenum[option]{number1 +- number2}."""
+        if option is None:
+            option = ''
+        else:
+            option = f"[{option}]"
 
         precision = ''
         format_str = "{:}"
         if self.__exponent < 0:
             precision = str(-self.__exponent + 1)
             format_str = f"{{:.{precision}f}}"
-        return format_str.format(self.x) + " +- " + format_str.format(self.x_error)
+        return f"\\tablenum{option}{{{format_str.format(self.x)} +- {format_str.format(self.x_error)}}}"
+
+    def display_separate(self, option: str = None) -> str:
+        """Same as display_table_separate but with \num instead of \tablenum."""
+        output = self.display_table_separate(option)
+        output = output.replace(r"\tablenum", r"\num")
+        return output
 
     def __eq__(self, other):
         return self.__x == other.__x and self.__x_error == other.__x_error
