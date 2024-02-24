@@ -14,10 +14,16 @@ class TexTabular:
     caption: str = "default Caption"
     caption_above: bool = True
     label: str = "default Label"
-    h_lines: List[int] = field(default_factory=list)
+    h_lines: List[int] | None = None
     filler: str = "--"
     booktabs: bool = False
     data: pd.DataFrame = field(default_factory=pd.DataFrame)
+
+    def __post_init__(self):
+        if self.h_lines is None:
+            self.h_lines = [1]
+        if not self.data.empty:
+            self.data = transform_dataframe_to_latex_ready(self.data)
 
     def add_data(self, data: pd.DataFrame, **kwargs) -> None:
         """before setting the input to the tabular data, the function reformats the error arrays with the

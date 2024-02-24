@@ -1,6 +1,4 @@
-import numpy as np
-
-from typing import Tuple, Any, List
+from typing import Tuple
 from rounding import roundup_two_significant_digits
 
 
@@ -52,10 +50,11 @@ class NumWithError:
         else:
             option = f"[{option}]"
 
-        precision = ''
         format_str = "{:}"
         if self.__exponent < 0:
             precision = str(-self.__exponent + 1)
+            if "{:e}".format(self.__x_error)[2] == "0":
+                precision = str(-self.__exponent)
             format_str = f"{{:.{precision}f}}"
         return f"\\tablenum{option}{{{format_str.format(self.x)} +- {format_str.format(self.x_error)}}}"
 
