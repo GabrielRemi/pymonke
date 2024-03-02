@@ -1,9 +1,9 @@
-monke/__pycache__/__init__.cpython-39.pyc
-monke/__pycache__/
-monke/__pycache__/__init__.cpython-39.pyc
-monke/__pycache__/__init__.cpython-39.pyc
-monke/__pycache__/functions.cpython-39.pyc
-monke/__pycache__/functions.cpython-310.pyc
+src/pymonke/__pycache__/__init__.cpython-39.pyc
+src/pymonke/__pycache__/
+src/pymonke/__pycache__/__init__.cpython-39.pyc
+src/pymonke/__pycache__/__init__.cpython-39.pyc
+src/pymonke/__pycache__/functions.cpython-39.pyc
+src/pymonke/__pycache__/functions.cpython-310.pyc
 dist/
 .vscode/
 test.*
@@ -12,3 +12,9 @@ venv
 test.py
 misc
 monke2.egg-info
+dist
+build
+.venv
+activate
+pymonke.egg-info
+.idea

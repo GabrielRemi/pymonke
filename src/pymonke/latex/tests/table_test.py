@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from monke.latex.tex_table import TexTable
+from src.pymonke.latex.tex_table import TexTable
 from monke.latex.tex_tabular import TexTabular
 
 # TODO table_test.py not up to date

@@ -3,7 +3,7 @@ from typing import List
 
 
 def roundup(x: float | int, r=2) -> float:
-    """rounds up a number to the decimal place r"""
+    """Rounds up a number to the decimal place r"""
     a = x*10**r
     a = np.ceil(a)
     a = a*10**(-r)
@@ -26,7 +26,7 @@ def roundup(x: float | int, r=2) -> float:
 
 
 def roundup_two_significant_digits(x: float) -> float:
-    """rounds the given number up to 2 significant digits"""
+    """Rounds the given number up to 2 significant digits"""
     scientific: List[str] = "{:e}".format(x).split("e")
     value, exponent = float(scientific[0]), int(scientific[1])
     if value < 2:

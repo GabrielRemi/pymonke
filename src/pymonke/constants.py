@@ -1,9 +1,11 @@
+"""Common physical constants in SI units."""
+
 LIGHTSPEED: float = 299792458  # Lichtgeschwindigkeit
 ELEMENTARY_CHARGE: float = 1.602176634e-19  # Elementarladung
 VACUUM_PERMEABILITY: float = 1.25663706212e-6  # Magnetische Feldkonstante
 VACUUM_PERMITTIVITY: float = 8.8541878128e-12  # Elektrische Feldkonstante
 COULOMB_CONSTANT: float = 8.9875517922e+9  # Coulomb-Konstante
-PLANCK_CONSTANT: float = 6.62607015e-34  # Planckes Wirkungsquantum
+PLANCK_CONSTANT: float = 6.62607015e-34  # Plancksches Wirkungsquantum
 GRAVITATIONAL_CONSTANT: float = 6.67430e-11  # Gravitationskonstante
 PLANCK_MASS: float = 2.176434e-8  # Planck Masse
 PLANCK_LENGTH: float = 1.616255e-35  # Planck Länge

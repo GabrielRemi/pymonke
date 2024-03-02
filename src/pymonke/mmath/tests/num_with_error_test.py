@@ -1,6 +1,6 @@
 import unittest
 
-from monke.mmath import NumWithError
+from src.pymonke.mmath import NumWithError
 
 
 class MyTestCase(unittest.TestCase):

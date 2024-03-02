@@ -1,13 +1,11 @@
 import pandas as pd
 
-from typing import Dict, List
+from typing import List
 
-from monke.mmath import NumWithError
+from ..mmath.num_with_error import NumWithError
 
 
-def transform_dataframe_to_latex_ready(data: pd.DataFrame, **kwargs) -> pd.DataFrame:
-    """for every Column searches for another column that represents the error and then puts the together
-    in a single column with rounded numbers. optionally renames the columns"""
+def transform_dataframe_to_latex_ready(data, **kwargs):
     if kwargs.get("error_marker") is None:
         kwargs["error_marker"] = ["err", "error", "fehler", "Err", "Error", "Fehler"]
     else:
@@ -31,14 +29,14 @@ def transform_dataframe_to_latex_ready(data: pd.DataFrame, **kwargs) -> pd.DataF
 
     new_dataframe = data.copy()
 
-    for column in data:
+    for column in data.columns:
         error = __get_error_column_name(data, column, kwargs["error_marker"])
         if error is None:
             continue
         num_data = data[column]
         error_data = data[error]
         new_data = []
-        option = kwargs["siunitx_column_option"].get(column)
+        option: str | None = kwargs["siunitx_column_option"].get(column)
         for x, err in zip(num_data, error_data):
             if kwargs["is_table_num"]:
                 new_data.append(NumWithError(x, err).display_table_separate(option))
@@ -53,7 +51,7 @@ def transform_dataframe_to_latex_ready(data: pd.DataFrame, **kwargs) -> pd.DataF
         new_dataframe.drop(columns=columns_to_ignore, inplace=True)
 
     for col in list(new_dataframe.columns):
-        option: str = kwargs["siunitx_column_option"].get(col)
+        option = kwargs["siunitx_column_option"].get(col)
         is_table_num: bool = kwargs["is_table_num"]
         new_dataframe[col] = [__display_num_value(i, option, is_table_num) if isinstance(i, (int, float)) else i
                               for i in new_dataframe[col]]

@@ -1,5 +1,6 @@
 from typing import Tuple
-from rounding import roundup_two_significant_digits
+
+from .rounding import roundup_two_significant_digits
 
 
 def _round_values(x: float, x_error: float) -> Tuple[float, float, float]:
@@ -22,7 +23,7 @@ def _round_values(x: float, x_error: float) -> Tuple[float, float, float]:
 
 
 class NumWithError:
-    """inputs two numbers and rounds them appropriately, treating __x_error as an uncertainty."""
+    """inputs two numbers and rounds them appropriately, treating x_error as an uncertainty."""
     def __init__(self, x: float | int,  x_error: float | int) -> None:
         if isinstance(x, (float, int)) and isinstance(x_error, (float, int)):
             x, x_error = float(x), float(x_error)
@@ -41,10 +42,8 @@ class NumWithError:
     def get_values(self) -> Tuple[float, float]:
         return self.__x, self.__x_error
 
-    def display_table_separate(self, option: str = None) -> str:
-        """outputs a string with the number and uncertainty separated by '+-' in a <num> block.
-        This functionality is meant to be used for work with tabular in latex with the siunitx package.
-        Can add an optional string, which will be added the following way: \tablenum[option]{number1 +- number2}."""
+    def display_table_separate(self, option: str | None = None) -> str:
+        r"""Creates a string of the form \tablenum{x +- x_error}"""
         if option is None:
             option = ''
         else:
@@ -58,8 +57,8 @@ class NumWithError:
             format_str = f"{{:.{precision}f}}"
         return f"\\tablenum{option}{{{format_str.format(self.x)} +- {format_str.format(self.x_error)}}}"
 
-    def display_separate(self, option: str = None) -> str:
-        """Same as display_table_separate but with \num instead of \tablenum."""
+    def display_separate(self, option: str | None = None) -> str:
+        r"""Same as display_table_separate but with \num instead of \tablenum."""
         output = self.display_table_separate(option)
         output = output.replace(r"\tablenum", r"\num")
         return output
@@ -69,3 +68,6 @@ class NumWithError:
 
     def __repr__(self):
         return f"NumWithError({self.__x}, {self.__x_error})"
+
+    def __str__(self):
+        return self.display_table_separate()
