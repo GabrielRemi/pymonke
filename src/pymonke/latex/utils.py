@@ -6,6 +6,7 @@ from ..mmath.num_with_error import NumWithError
 
 
 def transform_dataframe_to_latex_ready(data, **kwargs):
+    # initialize all keyword arguments
     if kwargs.get("error_marker") is None:
         kwargs["error_marker"] = ["err", "error", "fehler", "Err", "Error", "Fehler"]
     else:
@@ -27,8 +28,9 @@ def transform_dataframe_to_latex_ready(data, **kwargs):
     else:
         dict(kwargs["siunitx_column_option"])
 
-    new_dataframe = data.copy()
+    new_dataframe = data.copy()  # new dataframe for end result
 
+    # look for columns with errors
     for column in data.columns:
         error = __get_error_column_name(data, column, kwargs["error_marker"])
         if error is None:
@@ -80,10 +82,13 @@ def __get_error_column_name(data: pd.DataFrame, column: str, error_marker: List[
     return result
 
 
-def __display_num_value(x: int | float, option: str | None = None, is_table_num: bool = True) -> str:
-    """takes a number and formats it to use with the siunitx package,
-    e.g.:
+def __display_num_value(x: int | float, option: str | None = None, is_table_num: bool = True) -> str | None:
+    """takes a number and formats it to use with the siunitx package. Returns None if the value is not a number
+    Example
+    -------
     __display_num_value(2.3, sinuitx_option="round-mode=figures") -> \tablenum[round-mode=figures]{2.3}"""
+    if str(x) == "nan":
+        return None
     if option != "" and option is not None:
         option = f"[{option}]"
     else:

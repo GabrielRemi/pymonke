@@ -44,7 +44,7 @@ class TexTabular:
                 result += "        " + f"\\{line_style}" * h_lines + "\n"
             result += "        "
             for elem in column:
-                if str(elem) == "nan":
+                if str(elem) == "nan" or elem is None:
                     elem = self.filler
                 result += str(elem) + " & "
             result = result.removesuffix(" & ")

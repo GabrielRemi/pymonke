@@ -14,7 +14,7 @@ misc
 monke2.egg-info
 dist
 build
-.venv
+.venv*
 activate
 pymonke.egg-info
 .idea

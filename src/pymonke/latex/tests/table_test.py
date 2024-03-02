@@ -3,17 +3,11 @@ import unittest
 import pandas as pd
 
 from src.pymonke.latex.tex_table import TexTable
-from monke.latex.tex_tabular import TexTabular
+from src.pymonke.latex.tex_tabular import TexTabular
 
 # TODO table_test.py not up to date
 
 class MyTestCase(unittest.TestCase):
-    def test_empty(self):
-        table = TexTable(tabular=[TexTabular(alignment="c")], widths=[0.3, 0.3])
-        str(table)
-        table = TexTable(tabular=[TexTabular(alignment="c"), TexTabular(alignment="c")], widths=[0.3, 0.3])
-        str(table)
-
     def test_base_table(self):
         string = r"""\begin{table}[htbp]
     \centering
@@ -23,9 +17,9 @@ class MyTestCase(unittest.TestCase):
         \toprule
         Zahl1 & Zahl2 \\
         \midrule
-        1.0 & 1.0 \\
-        2.0 & 2.0 \\
-        3.0 &   \\
+        \tablenum{1} & \tablenum{1.0} \\
+        \tablenum{2} & \tablenum{2.0} \\
+        \tablenum{3} &   \\
         \bottomrule
     \end{tabular}
 \end{table}"""
