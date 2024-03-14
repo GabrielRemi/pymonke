@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # TODO change the reduced chi square function and translate the docstring to english.
 def reduced_chi_square(f, x, y, y_err, params: list[float]) -> float:
     """Berechnet das X² pro Freiheitsgrad für eine Funktion f mit parametern <params>

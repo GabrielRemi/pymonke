@@ -3,6 +3,7 @@ import pandas as pd
 from typing import List
 
 from ..mmath.num_with_error import NumWithError
+from ..misc.dataframe import get_error_column_name
 
 
 def transform_dataframe_to_latex_ready(data, **kwargs):
@@ -32,7 +33,7 @@ def transform_dataframe_to_latex_ready(data, **kwargs):
 
     # look for columns with errors
     for column in data.columns:
-        error = __get_error_column_name(data, column, kwargs["error_marker"])
+        error = get_error_column_name(data, column, kwargs["error_marker"])
         if error is None:
             continue
         num_data = data[column]
@@ -61,25 +62,6 @@ def transform_dataframe_to_latex_ready(data, **kwargs):
     new_dataframe.rename(columns=kwargs["columns"], inplace=True)
 
     return new_dataframe
-
-
-def __get_error_column_name(data: pd.DataFrame, column: str, error_marker: List[str]) -> str | None:
-    columns = list(data.columns)
-    if column not in columns:
-        raise ValueError("column not in DataFrame")
-
-    error_separator = ["_", "-", " ", ""]
-    result: str | None = None
-    for marker in error_marker:
-        for separator in error_separator:
-            if f"{column}{separator}{marker}" in columns:
-                if result is None:
-                    result = f"{column}{separator}{marker}"
-                else:
-                    text = f"""Error in DataFrame for the column {column} could not be determined because 
-                    of ambivalence. Error marker are {error_marker}"""
-                    raise ValueError(text)
-    return result
 
 
 def __display_num_value(x: int | float, option: str | None = None, is_table_num: bool = True) -> str | None:
