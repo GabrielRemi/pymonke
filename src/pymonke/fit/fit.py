@@ -5,7 +5,7 @@ from scipy import odr
 
 from typing import List, Dict, Tuple, Iterable
 
-from .parse import parse_function
+from .parse import parse_function, replace_funcs
 from .fit_result import FitResult
 from ..misc.file_management import read_data_into_dataframe
 from ..misc.dataframe import get_error_column_name
@@ -69,7 +69,7 @@ class Fit:
         query = f"{self.column_names['x']} >= {x_min} and {self.column_names['x']} <= {x_max}"
         data = self.data.query(query)
 
-        function, params = parse_function(meta["function"])
+        function, params = parse_function(replace_funcs(meta["function"]))
         x = data[self.column_names["x"]]
         y = data[self.column_names["y"]]
         y_error = data[self.column_names["y error"]]
@@ -96,7 +96,7 @@ class Fit:
         query = f"{self.column_names['x']} >= {x_min} and {self.column_names['x']} <= {x_max}"
         data = self.data.query(query)
 
-        function, params = parse_function(meta["function"])
+        function, params = parse_function(replace_funcs(meta["function"]))
         x, y = data[self.column_names["x"]], data[self.column_names["y"]]
         sy = data[self.column_names["y error"]]
         sx = None

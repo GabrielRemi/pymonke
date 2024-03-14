@@ -1,19 +1,23 @@
+from mypy_extensions import VarArg
 import nltk
 import numpy as np
 
-from typing import Callable, List, Tuple, TypeAlias, Iterable
-from mypy_extensions import VarArg
+from typing import Callable, List, Tuple, TypeAlias, Iterable, Dict
+from pprint import pprint
 
 num: TypeAlias = float | int
 val: TypeAlias = float | int | Iterable[float | int]
 
 
-def __gauss(x: num | Iterable, *params) -> num | np.ndarray:
-    a = params[0]
-    x0 = params[1]
-    sigma = params[2]
-    return a * np.exp((-(x - x0)**2) / (2 * sigma**2))
+def __gauss(*args: str) -> str:
+    return f"({args[0]} * exp((-(x - {args[1]}) ** 2) / (2 * {args[2]} ** 2)))"
 
+
+def __linear(*args: str) -> str:
+    return f"({args[0]} * x + {args[1]})"
+
+
+func_type: TypeAlias = Callable[[VarArg(str)], str]
 
 __ALPH_OPERATORS = {
     'arccos': 'np.arccos',
@@ -42,9 +46,55 @@ __SYMBOL_OPERATORS = {
     '^': '**',
 }
 
-__FUNCS = {
-    "gauss": (__gauss, 3),
+__FUNCS: Dict[str, Tuple[func_type, List[str]]] = {
+    "gauss": (__gauss, ["a", "x0", "sigma"]),
+    "linear": (__linear, ["m", "b"]),
 }
+
+
+def __get_unique_name(name: str, params: List[str]) -> str:
+    if name not in params:
+        return name
+    i = 1
+    while (out := f"{name}{i}") in params:
+        i += 1
+        continue
+
+    return out
+
+
+def __is_param(token: str) -> bool:
+    answer = (token not in __ALPH_OPERATORS and token not in __FUNCS and token.isalnum() and
+              not token.isnumeric() and token != "x")
+    if answer and token[0].isnumeric():
+        raise ValueError("param names cannot start with a number")
+    return answer
+
+
+def rename_parameters(_formula: str, rename: Dict[str, str]) -> str:
+    tokens = nltk.tokenize.wordpunct_tokenize(_formula)
+    for index, token in enumerate(tokens):
+        for key in rename.keys():
+            if key == token:
+                tokens[index] = rename[key]
+
+    return "".join(tokens)
+
+
+def replace_funcs(_formula: str) -> str:
+    tokens = nltk.tokenize.wordpunct_tokenize(_formula)
+    params: List[str] = []
+    for token in tokens:
+        if __is_param(token) and token not in params:
+            params.append(token)
+
+    for index, token in enumerate(tokens):
+        if token in __FUNCS:
+            b = [__get_unique_name(i, params) for i in __FUNCS[token][1]]
+            tokens[index] = __FUNCS[token][0](*b)
+            params.extend(b)
+
+    return "".join(tokens)
 
 
 def parse_function(_formula: str) -> Tuple[Callable[[val, VarArg(float | int)], val], List[str]]:
@@ -57,7 +107,7 @@ def parse_function(_formula: str) -> Tuple[Callable[[val, VarArg(float | int)], 
     for index, token in enumerate(tokens):
         if token in __ALPH_OPERATORS:
             tokens[index] = __ALPH_OPERATORS[token]
-        elif token.isalnum() and not token.isnumeric() and token not in params and token != "x":
+        elif __is_param(token):
             params.append(token)
 
     def function(x: val, *_params: num) -> val:

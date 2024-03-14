@@ -1,11 +1,22 @@
-from typing import Callable, Tuple, List, Iterable
+from typing import Callable, Tuple, List, Iterable, TypeVar, TypeAlias, Union, overload
 from mypy_extensions import VarArg
 from pandas import Series
 
+class Foo:
+    pass
+    def __add__(self, other):
+        return self
 
-def func(x: int, *args: int | float) -> int | float:
-    return x + sum(args)
+class Bar(Foo):
+    pass
+# num = TypeVar('num', float, int)
+num = TypeVar("num", bound=Foo)
 
 
-f: Callable[[int, VarArg(int | float)], int | float] = func
+
+def add(x: num, y: num) -> num:
+    return x + y
+
+
+print(add(Bar(), Foo()))
 
