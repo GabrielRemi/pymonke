@@ -8,20 +8,20 @@ from typing import List, Dict, Callable, TypeAlias, Iterable
 
 from ..mmath import NumWithError
 
-num: TypeAlias = int | float
-var: TypeAlias = int | float | Iterable[float | int]
+scalar: TypeAlias = int | float
 array: TypeAlias = np.ndarray | pd.Series
+numerical: TypeAlias = scalar | array
 
 
 @dataclass(repr=True)
 class FitResult:
-    function: Callable[[var, VarArg(num)], var] = field(repr=False)
+    function: Callable[[numerical, VarArg(scalar)], numerical] = field(repr=False)
     parameter_names: List[str]
     parameter_values: np.ndarray
     parameter_sigmas: np.ndarray
     reduced_chi_squared: float | None = field(default=None)
 
-    def eval(self, x: var) -> float | np.ndarray:
+    def eval(self, x: numerical) -> float | np.ndarray:
         """Calculated values of the fitted function"""
         result = self.function(x, *self.parameter_values)
         if isinstance(result, Iterable):
@@ -29,10 +29,13 @@ class FitResult:
         else:
             return float(result)
 
-    def as_dict(self) -> dict[str, NumWithError]:
+    def as_dict(self, chi_square=False) -> dict[str, NumWithError]:
         result: dict = dict()
         for name, x, sigma in zip(self.parameter_names, self.parameter_values, self.parameter_sigmas):
             result[name] = NumWithError(x, sigma)
+
+        if chi_square:
+            result["reduced_chi_squared"] = self.reduced_chi_squared
 
         return result
 

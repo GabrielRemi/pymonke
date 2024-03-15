@@ -1,12 +1,14 @@
 from mypy_extensions import VarArg
 import nltk
 import numpy as np
+from pandas import Series
 
 from typing import Callable, List, Tuple, TypeAlias, Iterable, Dict
-from pprint import pprint
 
-num: TypeAlias = float | int
-val: TypeAlias = float | int | Iterable[float | int]
+scalar: TypeAlias = float | int
+array: TypeAlias = Series | np.ndarray
+numerical: TypeAlias = scalar | array
+func_type: TypeAlias = Callable[[VarArg(str)], str]
 
 
 def __gauss(*args: str) -> str:
@@ -16,8 +18,6 @@ def __gauss(*args: str) -> str:
 def __linear(*args: str) -> str:
     return f"({args[0]} * x + {args[1]})"
 
-
-func_type: TypeAlias = Callable[[VarArg(str)], str]
 
 __ALPH_OPERATORS = {
     'arccos': 'np.arccos',
@@ -97,7 +97,7 @@ def replace_funcs(_formula: str) -> str:
     return "".join(tokens)
 
 
-def parse_function(_formula: str) -> Tuple[Callable[[val, VarArg(float | int)], val], List[str]]:
+def parse_function(_formula: str) -> Tuple[Callable[[numerical, VarArg(float | int)], numerical], List[str]]:
     """Creates a python function out of a string that represents a mathematical formula.
     x is the variable and all the other arguments are passed as positional arguments to the
     generated callable with the form f(x: float, *params) -> float.
@@ -110,7 +110,7 @@ def parse_function(_formula: str) -> Tuple[Callable[[val, VarArg(float | int)], 
         elif __is_param(token):
             params.append(token)
 
-    def function(x: val, *_params: num) -> val:
+    def function(x: numerical, *_params: scalar) -> numerical:
         if isinstance(x, Iterable):
             return np.array([function(i, *_params) for i in x])
         else:
