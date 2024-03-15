@@ -31,9 +31,9 @@ class Fit:
 
         self.result: Optional[dict[str, FitResult]] = None
 
-        self.column_names = self.get_column_names(meta_data.get("error_marker"))
+        self.column_names = self.__get_column_names(meta_data.get("error_marker"))
 
-    def get_column_names(self, error_marker: List[str] | None = None) -> Dict[str, str]:
+    def __get_column_names(self, error_marker: List[str] | None = None) -> Dict[str, str]:
         if error_marker is None:
             error_marker = ["err", "error", "fehler", "Err", "Error", "Fehler"]
         names: Dict[str, str] = dict()

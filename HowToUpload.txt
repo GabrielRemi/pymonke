@@ -3,3 +3,5 @@
 - danach: <python3 -m twine upload --repository pypi dist/*>
 
 Username: GabrielRemi
+
+token: pypi-AgEIcHlwaS5vcmcCJGI4MWFlYmNhLTFiYjUtNDAyMS1hYjdkLTE1ZmUzNTMwNDYzNgACKlszLCJjNDY2MzNkYS01ZGM4LTQ5YTctYmVmYi1mYjVmMTQ0Y2M5M2QiXQAABiB7OA5FC34TKowDi7n8rvAi77K5RyOis7oSCRvP_1qz1A

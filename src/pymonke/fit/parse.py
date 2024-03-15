@@ -10,6 +10,10 @@ array: TypeAlias = Series | np.ndarray
 numerical: TypeAlias = scalar | array
 func_type: TypeAlias = Callable[[VarArg(str)], str]
 
+class RepetitionError(BaseException):
+    def __init__(self):
+        super().__init__("Trying to change name of a parameter, but name already exists.")
+
 
 def __gauss(*args: str) -> str:
     return f"({args[0]} * exp((-(x - {args[1]}) ** 2) / (2 * {args[2]} ** 2)))"
@@ -73,10 +77,18 @@ def __is_param(token: str) -> bool:
 
 def rename_parameters(_formula: str, rename: Dict[str, str]) -> str:
     tokens = nltk.tokenize.wordpunct_tokenize(_formula)
+    params = get_params(tokens)
     for index, token in enumerate(tokens):
         for key in rename.keys():
+            if (new := rename[key]) == key:
+                continue
+            else:
+                if new in params:
+                    raise RepetitionError
+            if not __is_param(new):
+                raise ValueError("invalid parameter name")
             if key == token:
-                tokens[index] = rename[key]
+                tokens[index] = new
 
     return "".join(tokens)
 
@@ -95,6 +107,14 @@ def replace_funcs(_formula: str) -> str:
             params.extend(b)
 
     return "".join(tokens)
+
+
+def get_params(tokens: List[str]) -> List[str]:
+    params: List[str] = []
+    for index, token in enumerate(tokens):
+        if __is_param(token):
+            params.append(token)
+    return params
 
 
 def parse_function(_formula: str) -> Tuple[Callable[[numerical, VarArg(float | int)], numerical], List[str]]:
@@ -130,5 +150,12 @@ def parse_function(_formula: str) -> Tuple[Callable[[numerical, VarArg(float | i
         for op in __SYMBOL_OPERATORS.keys():
             string = string.replace(op, __SYMBOL_OPERATORS[op])
         return eval(string)
+
+    try:
+        function(0, *([0]*len(params)))
+    except SyntaxError as e:
+        raise SyntaxError(e)
+    except ArithmeticError:
+        pass
 
     return function, params
