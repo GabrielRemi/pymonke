@@ -76,6 +76,10 @@ def __is_param(token: str) -> bool:
 
 
 def rename_parameters(_formula: str, rename: Dict[str, str]) -> str:
+    # check for duplicates in rename dict
+    if len(rename.values()) != len(set(rename.values())):
+        raise RepetitionError
+
     tokens = nltk.tokenize.wordpunct_tokenize(_formula)
     params = get_params(tokens)
     for index, token in enumerate(tokens):

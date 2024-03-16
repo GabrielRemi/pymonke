@@ -1,51 +1,26 @@
 import customtkinter as ctk
-from customtkinter import CTk
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from matplotlib.figure import Figure
-import numpy as np
-import tkinter as tk
-from tkinter import filedialog
 
-import os
 
-from .misc import browse_files
-from .formula_frame import FormulaFrame
-
+from .formula.formula_frame import FormulaFrame
+from .plot.plot_frame import PlotFrame
+from .browse_frame import BrowseFrame
 
 class App(ctk.CTk):
     def __init__(self, fig_num: int = 1, rel_height: float = 0.5, rel_width: float = 0.5):
         super().__init__()
         self.geometry(self.__get_geometry(rel_height, rel_width))
         self.title("PyMonke data fitting")
+        self.grid_columnconfigure((0, 1), weight=5)
+        self.grid_columnconfigure(2, weight=8)
 
-        self.fig = Figure(figsize=(5, 4), dpi=100)
-        self.ax = self.fig.add_subplot()
-        self.ax.set_xlabel("x")
-        self.ax.set_ylabel("y")
+        self.browse_data_frame = BrowseFrame(file_type=".*", master=self)
+        self.browse_data_frame.grid(row=0, column=0)
 
+        self.plot_frame = PlotFrame(master=self)
+        self.plot_frame.grid(row=0, column=1)
 
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self)  # A tk.DrawingArea.
-        self.canvas.draw()
-        self.canvas.get_tk_widget().grid(row=0, column=0, padx=10, pady=10, sticky="ew")
-
-        self.toolbar = NavigationToolbar2Tk(self.canvas, self, pack_toolbar=False)
-        self.toolbar.update()
-        self.toolbar.grid(row=1, column=0)
-        file_name: str
-
-        def f():
-            nonlocal file_name
-            file_name = browse_files("select Data file", ".csv, .txt")
-            print(file_name)
-
-        self.grid_columnconfigure(1, weight=10)
         self.formula_frame = FormulaFrame(master=self)
-        self.formula_frame.grid(row=0, column=1, sticky="nsew")
-
-        self.button = ctk.CTkButton(self, text="browse files", command=f)
-        self.button.grid(row=1, column=1)
-
+        self.formula_frame.grid(row=0, column=2, sticky="nsew", padx=50)
 
         self.opt = ctk.CTkOptionMenu(master=self, values=["OLS", "ODR"])
         self.opt.set("OLS")
