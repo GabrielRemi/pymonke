@@ -10,7 +10,7 @@ array: TypeAlias = Series | np.ndarray
 numerical: TypeAlias = scalar | array
 func_type: TypeAlias = Callable[[VarArg(str)], str]
 
-class RepetitionError(BaseException):
+class RepetitionError(Exception):
     def __init__(self):
         super().__init__("Trying to change name of a parameter, but name already exists.")
 

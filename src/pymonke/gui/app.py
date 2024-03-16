@@ -39,8 +39,9 @@ class App(ctk.CTk):
             file_name = browse_files("select Data file", ".csv, .txt")
             print(file_name)
 
+        self.grid_columnconfigure(1, weight=10)
         self.formula_frame = FormulaFrame(master=self)
-        self.formula_frame.grid(row=0, column=1)
+        self.formula_frame.grid(row=0, column=1, sticky="nsew")
 
         self.button = ctk.CTkButton(self, text="browse files", command=f)
         self.button.grid(row=1, column=1)
