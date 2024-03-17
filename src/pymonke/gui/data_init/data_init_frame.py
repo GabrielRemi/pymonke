@@ -36,6 +36,7 @@ class DataInitFrame(CTkFrame):
         self.status.grid(row=4, column=0, columnspan=2, sticky="ns")
 
         self.save_meta_frame = BrowseSaveFrame(master=self)
+        self.save_meta_frame.save_button.configure(command=self.save_meta_to_file)
         self.save_meta_frame.grid(row=3, column=0, columnspan=2)
 
     def load_data(self, browse: bool = True) -> pd.DataFrame | None:
@@ -108,3 +109,9 @@ class DataInitFrame(CTkFrame):
             self.y_data_frame.text.set(y)
         self.check_xy_input("xy")
 
+    def save_meta_to_file(self) -> None:
+        try:
+            self.save_meta_frame.save()
+            self.status.add_info("Meta data saved to file successfully")
+        except Exception as e:
+            self.status.add_error(str(e))
