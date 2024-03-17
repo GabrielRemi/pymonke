@@ -10,7 +10,6 @@ test.*
 monke2.egg-info/*
 venv
 test.py
-misc
 monke2.egg-info
 dist
 build
