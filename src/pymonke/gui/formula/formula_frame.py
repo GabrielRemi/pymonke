@@ -6,6 +6,7 @@ from typing import Optional
 from pymonke.fit.parse import parse_function, replace_funcs
 from pymonke.fit.fit import func_type
 from pymonke.gui import EntryError
+from ..misc import get_meta
 from .parameters_scrollable_frame import ParametersScrollableFrame
 
 
