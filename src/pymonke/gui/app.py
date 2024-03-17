@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 from typing import Optional, Any
 
@@ -34,6 +34,8 @@ class App(Root, ctk.CTk):
         self.formula_frame = FormulaFrame(master=self)
         self.formula_frame.grid(row=0, column=2, sticky="nsew", padx=50)
 
+        self.formula_frame.after(10000, self.plot_frame.canvas.plot_data)
+
         self.opt = ctk.CTkOptionMenu(master=self, values=["OLS", "ODR"])
         self.opt.set("OLS")
         self.opt.grid(row=1, column=2)
@@ -45,7 +47,8 @@ class App(Root, ctk.CTk):
         return result
 
     def load_meta(self):
-        self.meta = self.data_init.load_meta()
+        if (val := self.data_init.load_meta()) is not None:
+            self.meta = val
         self.load_from_meta()
         ic(self.meta)
 
@@ -57,3 +60,12 @@ class App(Root, ctk.CTk):
         self.data_init.load_from_meta()
         ic(self.data)
 
+    def get_x(self) -> Optional[Series]:
+        if (x := self.meta.get("x")) is not None and self.data is not None:
+            return self.data[x]
+        return None
+
+    def get_y(self) -> Optional[Series]:
+        if (y := self.meta.get("y")) is not None and self.data is not None:
+            return self.data[y]
+        return None
