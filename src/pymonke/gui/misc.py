@@ -27,6 +27,10 @@ class Root:
     meta: dict = field(default_factory=dict)
     data: Optional[pd.DataFrame] = None
 
+    def load_from_meta(self) -> None:
+        """Update everything based on the meta dictionary."""
+        ...
+
     def __lt__(self, other):
         return len(self.data) < len(other.data)
 
@@ -66,3 +70,12 @@ def get_data(obj: CTkBaseClass) -> Optional[pd.DataFrame]:
 
     assert isinstance(master, Root)
     return master.data
+
+
+def get_root(obj: CTkBaseClass) -> Root:
+    """Get the Root object."""
+    master = obj.master
+    while not isinstance(master, Root):
+        master = master.master
+
+    return master

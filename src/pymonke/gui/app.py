@@ -6,14 +6,13 @@ from typing import Optional, Any
 from .formula.formula_frame import FormulaFrame
 from .plot.plot_frame import PlotFrame
 from .data_init.data_init_frame import DataInitFrame
-from .misc import Root, get_meta, get_data
+from .misc import Root
 
 
 class App(Root, ctk.CTk):
     def __init__(self, rel_height: float = 0.5, rel_width: float = 0.5):
         # Root.__init__(self)
         ctk.CTk.__init__(self)
-        Root.__init__(self)
 
         self.geometry(self.__get_geometry(rel_height, rel_width))
         self.title("PyMonke data fitting")
@@ -47,9 +46,14 @@ class App(Root, ctk.CTk):
 
     def load_meta(self):
         self.meta = self.data_init.load_meta()
+        self.load_from_meta()
         ic(self.meta)
 
     def load_data(self):
         self.data = self.data_init.load_data()
+        ic(self.data)
+
+    def load_from_meta(self) -> None:
+        self.data_init.load_from_meta()
         ic(self.data)
 

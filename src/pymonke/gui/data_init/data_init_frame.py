@@ -7,7 +7,8 @@ from .browse_save_frame import BrowseSaveFrame
 from ..browse_frame import BrowseFrame
 from ..entry_label_frame import EntryLabelFrame
 from ..info_label import InfoLabel
-from ..misc import get_data, get_meta
+from ..misc import get_data, get_meta, get_root
+from .status_frame import StatusFrame
 
 from pymonke.misc.file_management import read_data_into_dataframe
 from pymonke.misc.dataframe import get_error_column_name
@@ -31,49 +32,52 @@ class DataInitFrame(CTkFrame):
         self.y_data_frame.entry.bind("<Return>", self.save_y_name)
         self.y_data_frame.grid(row=2, column=1)
 
-        self.info_label = InfoLabel(master=self, text="Errors displayed here", text_color="red")
-        self.info_label.grid(row=3, column=0, columnspan=2)
+        self.status = StatusFrame(master=self, height=400)
+        self.status.grid(row=4, column=0, columnspan=2, sticky="ns")
 
         self.save_meta_frame = BrowseSaveFrame(master=self)
-        self.save_meta_frame.grid(row=4, column=0, columnspan=2)
+        self.save_meta_frame.grid(row=3, column=0, columnspan=2)
 
-    def load_data(self) -> pd.DataFrame:
+    def load_data(self, browse: bool = True) -> pd.DataFrame | None:
         try:
-            self.browse_data_frame.browse()
+            if browse:
+                self.browse_data_frame.browse()
             file_path = self.browse_data_frame.file_path.get()
-            data = read_data_into_dataframe(file_path)
+            if (kwargs := get_meta(self).get("read_data_args")) is None:
+                kwargs = dict()
+            data = read_data_into_dataframe(file_path, **kwargs)
             get_meta(self)["file"] = file_path
-            ic(get_meta(self))
-            self.info_label.show_info(text="data loaded successfully")
+            self.status.add_info(text="data loaded successfully")
             return data
         except Exception as e:
-            self.info_label.show_error(str(e))
+            self.status.add_error(str(e))
+            return None
 
     def load_meta(self) -> dict | None:
         try:
             self.load_meta_frame.browse()
             file_path = self.load_meta_frame.file_path.get()
             data = json.loads(open(file_path).read())
-            self.info_label.show_info("Meta Data loaded successfully")
+            self.status.add_info("Meta Data loaded successfully")
             return data
         except Exception as e:
-            self.info_label.show_error(str(e))
+            self.status.add_error(str(e))
             return None
 
-    def check_xy_input(self, x_or_y: str, ):
-        if x_or_y == "x":
+    def check_xy_input(self, xy: str):
+        if "x" in xy:
             if (text := self.x_data_frame.text.get()) is not None and self.entry_in_dataframe(text):
-                self.info_label.show_info("X column found")
+                self.status.add_info("X column found")
             else:
-                self.info_label.show_error("X column not found")
-        elif x_or_y == "y":
+                self.status.add_error("X column not found")
+        if "y" in xy:
             if (text := self.y_data_frame.text.get()) is not None and self.entry_in_dataframe(text):
+                self.status.add_info("Y column found")
                 if get_error_column_name(get_data(self), text) is None:
-                    self.info_label.show_error("Y Error not found")
-                else:
-                    self.info_label.show_info("Y column found")
+                    self.status.add_error("Y Error not found")
+
             else:
-                self.info_label.show_error("Y column not found")
+                self.status.add_error("Y column not found")
 
     def entry_in_dataframe(self, name: str) -> bool:
         if (data := get_data(self)) is not None:
@@ -85,13 +89,22 @@ class DataInitFrame(CTkFrame):
         x_name = self.x_data_frame.text.get()
         get_meta(self)["x"] = x_name
         self.check_xy_input("x")
-        ic(get_meta(self))
 
     def save_y_name(self, _=None):
         y_name = self.y_data_frame.text.get()
         get_meta(self)["y"] = y_name
         self.check_xy_input("y")
-        ic(get_meta(self))
 
     def load_from_meta(self) -> None:
         """Function that initializes values in this frame if metadata is loaded."""
+        meta = get_meta(self)
+        if (file := meta.get("file")) is not None:
+            self.browse_data_frame.file_path.set(file)
+            get_root(self).data = self.load_data(False)
+
+        if (x := meta.get("x")) is not None:
+            self.x_data_frame.text.set(x)
+        if (y := meta.get("y")) is not None:
+            self.y_data_frame.text.set(y)
+        self.check_xy_input("xy")
+
