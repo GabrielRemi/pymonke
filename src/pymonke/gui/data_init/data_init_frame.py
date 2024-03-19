@@ -90,11 +90,13 @@ class DataInitFrame(CTkFrame):
         x_name = self.x_data_frame.text.get()
         get_meta(self)["x"] = x_name
         self.check_xy_input("x")
+        get_root(self).get_plot_frame().plot_data()
 
     def save_y_name(self, _=None):
         y_name = self.y_data_frame.text.get()
         get_meta(self)["y"] = y_name
         self.check_xy_input("y")
+        get_root(self).get_plot_frame().plot_data()
 
     def load_from_meta(self) -> None:
         """Function that initializes values in this frame if metadata is loaded."""

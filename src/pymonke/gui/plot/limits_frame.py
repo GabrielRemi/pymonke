@@ -2,6 +2,7 @@ from customtkinter import *
 
 from ..misc import get_meta
 
+
 class LimitsFrame(CTkFrame):
     def __init__(self, **kwargs):
         CTkFrame.__init__(self, **kwargs)
@@ -27,9 +28,7 @@ class LimitsFrame(CTkFrame):
         self.max.set(str(_max))
 
     def set_min(self, value: float):
-        if value < self.lower_bound:
-            value = self.lower_bound
-        elif value >= (max := float(self.max.get())):
+        if value >= (max := float(self.max.get())):
             value = max
             value -= (max - self.lower_bound) / max * 0.001
         self.min.set(str(value))
@@ -37,11 +36,9 @@ class LimitsFrame(CTkFrame):
         ic(get_meta(self))
 
     def set_max(self, value: float):
-        if value > self.upper_bound:
-            value = self.upper_bound
-        elif value <= (min := float(self.min.get())):
-            value = min
-            value += (self.upper_bound - min) / min * 0.001
+        if value <= (_min := float(self.min.get())):
+            value = _min
+            value += (self.upper_bound - _min) / _min * 0.001
         self.max.set(str(value))
         get_meta(self)["x_max_limit"] = value
         ic(get_meta(self))
@@ -51,3 +48,4 @@ class LimitsFrame(CTkFrame):
 
     def max_callback(self, _):
         self.set_max(float(self.max.get()))
+

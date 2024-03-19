@@ -1,4 +1,7 @@
+from typing import List, Dict, Tuple, Callable, TypeAlias, Optional, Any
+
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.figure import Figure, SubFigure
 from mypy_extensions import VarArg
 import numpy as np
@@ -7,12 +10,10 @@ import scienceplots
 from scipy import odr
 from scipy.optimize import curve_fit
 
-from typing import List, Dict, Tuple, Iterable, Callable, TypeAlias, Optional, Any
-
 from .fit_result import FitResult
+from .parse import parse_function, replace_funcs, numerical, scalar, array
 from ..misc.dataframe import get_error_column_name
 from ..misc.file_management import read_data_into_dataframe
-from .parse import parse_function, replace_funcs, numerical, scalar, array
 
 func_type: TypeAlias = Callable[[numerical, VarArg(scalar)], numerical]
 
@@ -57,7 +58,7 @@ class Fit:
             size = (6, 4.7)
         if (dpi := self.meta_data.get("figure_dpi")) is None:
             dpi = 120
-        plt.figure(num = figure_id, figsize=size, dpi=dpi)
+        plt.figure(num=figure_id, figsize=size, dpi=dpi)
         x, y = self.column_names["x"], self.column_names["y"]
         sx, sy = self.column_names.get("x error"), self.column_names["y error"]
         if sx is None:
@@ -83,6 +84,36 @@ class Fit:
             for fit_name in self.result.keys():
                 self.__plot_fit(fit_name, self.result[fit_name])
 
+    def plot_ax(self, ax):
+        if (style := self.meta_data.get("figure_style")) is None:
+            style = "science"
+        plt.style.use(style)
+
+        x, y = self.column_names["x"], self.column_names["y"]
+        sx, sy = self.column_names.get("x error"), self.column_names["y error"]
+        if sx is None:
+            sx = 0
+        else:
+            sx = self.data[sx]
+
+        plotting_style = {
+            "linestyle": "",
+            "ms": 3,
+            "marker": "o",
+            "capsize": 2.5,
+            "zorder": 100
+        }
+
+        if (more_style := self.meta_data.get("plotting_style")) is not None:
+            plotting_style.update(more_style)
+
+        ax.set_xlim(self.__get_xlim(self.meta_data))
+        ax.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style)
+
+        if self.result is not None:
+            for fit_name in self.result.keys():
+                self.__plot_fit_ax(ax, fit_name, self.result[fit_name])
+
     def __plot_fit(self, name: str, fit_res: FitResult) -> None:
         meta: dict = self.meta_data["fits"][name]
         if (points := meta.get("fit_points")) is None:
@@ -99,6 +130,23 @@ class Fit:
         x = np.linspace(*self.__get_xlim(meta), points)
         plt.plot(x, fit_res.eval(x), **plotting_style)
 
+
+    def __plot_fit_ax(self, ax, name: str, fit_res: FitResult) -> None:
+        meta: dict = self.meta_data["fits"][name]
+        if (points := meta.get("fit_points")) is None:
+            points = 150
+
+        plotting_style = {
+            "linestyle": "--",
+            "zorder": 0,
+        }
+
+        if (more_style := meta.get("plotting_style")) is not None:
+            plotting_style.update(more_style)
+
+        x = np.linspace(*self.__get_xlim(meta), points)
+        ax.plot(x, fit_res.eval(x), **plotting_style)
+
     def __get_xlim(self, meta: dict) -> Tuple[float, float]:
         x = self.column_names["x"]
         if (x_min := meta.get("x_min_limit")) is None:
@@ -109,7 +157,9 @@ class Fit:
         return x_min, x_max
 
     def run(self) -> dict[str, FitResult]:
-        fits_meta: dict[str, dict] = self.meta_data["fits"]
+        if (val := self.meta_data.get("fits")) is None:
+            return dict()
+        fits_meta: dict[str, dict] = val
         result: dict[str, FitResult] = dict()
         for fit_name in fits_meta.keys():
             result[fit_name] = self.__do_fit(fits_meta[fit_name])

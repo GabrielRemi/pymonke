@@ -26,6 +26,7 @@ def browse_files(text: str, file_type: str) -> str:
 class Root:
     meta: dict = field(default_factory=dict)
     data: Optional[pd.DataFrame] = None
+    fit_result: Optional[dict] = None
 
     def load_from_meta(self) -> None:
         """Update everything based on the meta dictionary."""
@@ -38,6 +39,10 @@ class Root:
     def get_sx(self) -> Optional[pd.Series]: ...
 
     def get_sy(self) -> Optional[pd.Series]: ...
+
+    def get_plot_frame(self) -> Any: ...
+
+    def do_fit(self) -> Any: ...
 
     def __lt__(self, other):
         return len(self.data) < len(other.data)

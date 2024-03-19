@@ -1,4 +1,5 @@
 from customtkinter import *
+from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 
@@ -14,8 +15,6 @@ class PlotCanvas(CTkFrame):
         self.ax = self.fig.add_subplot()
         self.ax.set_xlabel("x")
         self.ax.set_ylabel("y")
-
-        self.__data = None
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)  # A tk.DrawingArea.
         self.canvas.draw()
@@ -36,15 +35,9 @@ class PlotCanvas(CTkFrame):
         self.canvas.draw()
 
     def plot_data(self) -> None:
-        ic()
-        root = get_root(self)
-        x, y = root.get_x(), root.get_y()
-        if x is None or y is None:
-            return
-        ic(x, y)
-        _min, _max = x.min(), x.max()
-        self.set_limits(_min, _max)
-        self.ax.clear()
-        self.ax.scatter(x, y)
-
-        self.canvas.draw()
+        try:
+            fit = get_root(self).do_fit()
+            self.ax.clear()
+            fit.plot_ax(self.ax)
+        except Exception as e:
+            pass
