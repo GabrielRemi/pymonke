@@ -77,4 +77,3 @@ class FitFrame(CTkFrame):
                 self.fit_combo_box.configure(values=[*(keys := fits.keys()), "Add Fit"])
                 self.fit_combo_box.set(keys[0])
                 self.update_from_fit_meta()
-
