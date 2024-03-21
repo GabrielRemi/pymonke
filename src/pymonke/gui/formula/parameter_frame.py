@@ -6,6 +6,7 @@ from typing import Any, Callable
 class ParameterFrame(CTkFrame):
     def __init__(self, name: str, **args):
         super().__init__(**args)
+
         self.name = name
         self.value = CTkLabel(master=self, text="", width=120)
         self.name_var = StringVar(master=self, value=name)

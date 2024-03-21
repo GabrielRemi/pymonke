@@ -4,6 +4,7 @@ from pandas import DataFrame, Series
 
 from typing import Optional, Any
 
+from .formula.formula_frame import FormulaFrame
 from ..fit import Fit, FitResult
 from .fitting.fit_frame import FitFrame
 from .data_init.data_init_frame import DataInitFrame
@@ -13,7 +14,7 @@ from ..misc.dataframe import get_error_column_name
 
 
 class App(Root, ctk.CTk):
-    def __init__(self, rel_height: float = 0.5, rel_width: float = 0.5):
+    def __init__(self, rel_height: float = 0.6, rel_width: float = 0.8):
         ctk.CTk.__init__(self)
 
         self.geometry(self.__get_geometry(rel_height, rel_width))
@@ -39,12 +40,14 @@ class App(Root, ctk.CTk):
 
         # self.formula_frame.after(10000, self.plot_frame.plot_data)
 
-
     def __get_geometry(self, rel_height: float, rel_width: float) -> str:
         screen_width = self.winfo_screenwidth() * rel_width
         screen_height = self.winfo_screenheight() * rel_height
         result = f"{int(screen_width)}x{int(screen_height)}"
         return result
+
+    def get_fit_frame(self) -> FitFrame:
+        return self.fit_frame
 
     def load_meta(self):
         if (val := self.data_init.load_meta()) is not None:
@@ -73,6 +76,7 @@ class App(Root, ctk.CTk):
     def do_fit(self) -> Fit:
         fit: Fit = Fit(meta_data=self.meta, data=self.data)
         self.fit_result = fit.run()
+        ic(self.fit_result)
         return fit
 
     def get_y(self) -> Optional[Series]:

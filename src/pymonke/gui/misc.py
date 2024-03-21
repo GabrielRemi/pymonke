@@ -44,6 +44,8 @@ class Root:
 
     def do_fit(self) -> Any: ...
 
+    def get_fit_frame(self) -> Any: ...
+
     def __lt__(self, other):
         return len(self.data) < len(other.data)
 

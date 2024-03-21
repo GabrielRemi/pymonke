@@ -17,14 +17,17 @@ class FitComboBox(CTkComboBox):
         old: list = self.cget("values")
         if fit_name in old:
             return
-        if self.selected == "Add Fit":
+        if self.selected == "Add Fit":  # Add
             if fit_name == "Add Fit":
                 return
             old.insert(-2, fit_name)
             self.configure(values=old)
             self.set(fit_name)
             fits[fit_name] = dict()
-        else:
+            formula_frame = get_root(self).get_fit_frame().formula_frame
+            formula_frame.update_formula("")
+            formula_frame.update_parameters(None, "")
+        else:  # Rename
             for i, name in enumerate(old):
                 if name == self.selected:
                     old[i] = fit_name

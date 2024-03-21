@@ -1,6 +1,6 @@
 from customtkinter import *
 
-from typing import Optional
+from typing import Optional, Any
 
 from pymonke.fit.parse import rename_parameters, RepetitionError
 from .parameter_frame import ParameterFrame
@@ -19,6 +19,14 @@ class ParametersScrollableFrame(CTkScrollableFrame):
         for index, param in enumerate(params):
             self.param_frames[param] = ParameterFrame(master=self, name=param)
             self.param_frames[param].grid(row=index, column=0, sticky="ew")
+
+    def get_params(self) -> list | None:
+        if (val := self.param_frames) is None:
+            return None
+        return list(self.param_frames.keys())
+
+    def set_param_values(self, values: dict[str, Any]):
+        pass
 
     def delete_parameter_frames(self):
         if self.param_frames is not None:

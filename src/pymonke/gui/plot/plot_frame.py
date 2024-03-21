@@ -15,7 +15,7 @@ class PlotFrame(CTkFrame):
         self.canvas = PlotCanvas(master=self)
         self.canvas.grid(row=0, column=0, columnspan=2)
 
-        self.limits_frame = LimitsFrame(master=self)
+        self.limits_frame = LimitsFrame(master=self, label="Plotting limits")
         self.limits_frame.min_entry.bind("<Return>", self.min_callback)
         self.limits_frame.max_entry.bind("<Return>", self.max_callback)
         self.limits_frame.grid(row=1, column=0, columnspan=2)
@@ -27,11 +27,13 @@ class PlotFrame(CTkFrame):
         self.limits_frame.min_callback(_)
         val = self.limits_frame.min.get()
         self.canvas.set_limits(float(val), None)
+        self.load_limits_to_meta()
 
     def max_callback(self, _):
         self.limits_frame.max_callback(_)
         val = self.limits_frame.max.get()
         self.canvas.set_limits(None, float(val))
+        self.load_limits_to_meta()
 
     def plot_data(self) -> None:
         self.canvas.plot_data()
@@ -48,3 +50,10 @@ class PlotFrame(CTkFrame):
         if _max is not None:
             self.limits_frame.set_max(_max)
         self.canvas.set_limits(_min, _max)
+
+    def load_limits_to_meta(self, _=None):
+        _min = float(self.limits_frame.min.get())
+        _max = float(self.limits_frame.max.get())
+        get_meta(self)["x_min_limit"] = _min
+        get_meta(self)["x_max_limit"] = _max
+        ic(get_meta(self))

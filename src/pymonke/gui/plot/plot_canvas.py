@@ -39,5 +39,7 @@ class PlotCanvas(CTkFrame):
             fit = get_root(self).do_fit()
             self.ax.clear()
             fit.plot_ax(self.ax)
+            self.canvas.draw()
+            ic()
         except Exception as e:
-            pass
+            ic(str(e))
