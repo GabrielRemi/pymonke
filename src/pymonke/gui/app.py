@@ -1,15 +1,14 @@
-import customtkinter as ctk
-import matplotlib.pyplot as plt
-from pandas import DataFrame, Series
-
 from typing import Optional, Any
 
-from .formula.formula_frame import FormulaFrame
-from ..fit import Fit, FitResult
-from .fitting.fit_frame import FitFrame
+import customtkinter as ctk
+from pandas import DataFrame, Series
+
 from .data_init.data_init_frame import DataInitFrame
-from .plot.plot_frame import PlotFrame
+from .dict_frame import DictFrame
+from .fitting.fit_frame import FitFrame
 from .misc import Root
+from .plot.plot_frame import PlotFrame
+from ..fit import Fit, FitResult
 from ..misc.dataframe import get_error_column_name
 
 
@@ -35,8 +34,17 @@ class App(Root, ctk.CTk):
         self.data_init.browse_data_frame.button.configure(command=self.load_data)
         self.data_init.grid(row=0, column=0)
 
+        self.read_data_arguments_frame = DictFrame(master=self, text="Additional Arguments for data reading")
+        self.read_data_arguments_frame.return_bindings = [self.update_read_data_args]
+
+        self.read_data_arguments_frame.grid(row=1, column=0)
+
         self.fit_frame = FitFrame(master=self)
         self.fit_frame.grid(row=0, column=2, sticky="nsew", padx=50)
+
+        self.plotting_style_arguments = DictFrame(master=self, text="Plotting Style Arguments")
+        self.plotting_style_arguments.return_bindings = [self.fit_frame.update_plotting_style]
+        self.plotting_style_arguments.grid(row=1, column=1, pady=20)
 
         # self.formula_frame.after(10000, self.plot_frame.plot_data)
 
@@ -49,6 +57,15 @@ class App(Root, ctk.CTk):
     def get_fit_frame(self) -> FitFrame:
         return self.fit_frame
 
+    def update_read_data_args(self, _=None):
+        if self.meta.get("read_data_args") is None:
+            self.meta["read_data_args"] = dict()
+        self.meta["read_data_args"].update(self.read_data_arguments_frame.get_args())
+        ic(self.meta)
+
+    def get_plotting_style_arguments(self) -> dict:
+        return self.plotting_style_arguments.get_args()
+
     def load_meta(self):
         if (val := self.data_init.load_meta()) is not None:
             self.meta = val
@@ -60,6 +77,7 @@ class App(Root, ctk.CTk):
         ic(self.data)
 
     def load_from_meta(self) -> None:
+        self.read_data_arguments_frame.load_parameters(self.meta)
         self.data_init.load_from_meta()
         self.plot_frame.load_from_meta()
         self.fit_frame.load_from_meta()

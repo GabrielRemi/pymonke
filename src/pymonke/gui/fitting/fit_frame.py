@@ -59,8 +59,11 @@ class FitFrame(CTkFrame):
     def set_params_values_from_results(self):
         fit_name = get_root(self).get_fit_frame().get_fit_name()
         if fit_name is not None:
-            result = get_root(self).fit_result[fit_name]
-            get_root(self).get_fit_frame().set_param_values(result.as_dict())
+            fit_result = get_root(self).fit_result
+            if fit_result is not None:
+                result = fit_result.get(fit_name)
+                if result is not None:
+                    get_root(self).get_fit_frame().set_param_values(result.as_dict())
 
     def get_fit_type(self):
         if self.fit_type_option.get() == "OLS":
@@ -105,6 +108,16 @@ class FitFrame(CTkFrame):
         if (val := self.get_fit_name()) is None:
             return
         get_meta(self)["fits"][val]["start_parameters"] = p0
+        ic(get_meta(self))
+
+    def update_plotting_style(self):
+        if (val := self.get_fit_name()) is None:
+            return
+        args = get_root(self).get_plotting_style_arguments()
+        if get_meta(self)["fits"][val].get("plotting_style") is None:
+            get_meta(self)["fits"][val]["plotting_style"] = args
+        else:
+            get_meta(self)["fits"][val]["plotting_style"].update(args)
         ic(get_meta(self))
 
     def load_limits_to_meta(self):

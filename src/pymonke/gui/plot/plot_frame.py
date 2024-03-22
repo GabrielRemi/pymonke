@@ -44,9 +44,12 @@ class PlotFrame(CTkFrame):
         # show parameter values after the fit
         fit_name = get_root(self).get_fit_frame().get_fit_name()
         if fit_name is not None:
-            result = get_root(self).fit_result[fit_name]
-            get_root(self).get_fit_frame().set_param_values(result.as_dict())
-            ic(result)
+            fit_result = get_root(self).fit_result
+            if fit_result is not None:
+                result = get_root(self).fit_result.get(fit_name)
+                if result is not None:
+                    get_root(self).get_fit_frame().set_param_values(result.as_dict())
+                ic(result)
 
     def load_from_meta(self) -> None:
         self.plot_data()

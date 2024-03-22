@@ -2,7 +2,7 @@ from customtkinter import *
 
 
 class DictFrame(CTkFrame):
-    def __init__(self, text:str, **kwargs):
+    def __init__(self, text: str, **kwargs):
         super().__init__(**kwargs)
         self.label = CTkLabel(self, text=text)
         self.label.grid(row=0, column=0)
@@ -12,12 +12,56 @@ class DictFrame(CTkFrame):
 
         self.entries: list[EntryPairFrame] = []
 
-    def add_parameter(self):
+        self.return_bindings = []
+        self.ignore_keys = []
+
+    def add_parameter(self, key: str = "", value: str = ""):
         n = len(self.entries)
         entry = EntryPairFrame(master=self)
+        entry.key.bind("<Return>", self.bindings)
+        entry.key_var.set(key)
+        entry.value.bind("<Return>", self.bindings)
+        entry.value_var.set(value)
         entry.grid(row=n+1, column=0)
         self.entries.append(entry)
         self.add_button.grid(row=n+2, column=0)
+
+    def load_parameters(self, data: dict) -> None:
+        self.delete_all()
+        for key in data.keys():
+            val = data[key]
+            if key not in self.ignore_keys:
+                self.add_parameter(key, val)
+
+    def delete_entry(self, index) -> None:
+        entry = self.entries.pop(index)
+        entry.destroy()
+
+    def delete_last(self) -> None:
+        self.delete_entry(-1)
+
+    def delete_all(self) -> None:
+        for _ in range(len(self.entries)):
+            self.delete_last()
+
+    def get_args(self):
+        res = dict()
+        for entry in self.entries:
+            if (val := entry.value_var.get()) == "":
+                val = None
+            res[entry.key_var.get()] = self.parse(val)
+
+        return res
+
+    def bindings(self, _=None):
+        for binding in self.return_bindings:
+            binding()
+
+    def parse(self, value: str):
+        try:
+            return float(value)
+        except:
+            return value
 
 
 class EntryPairFrame(CTkFrame):

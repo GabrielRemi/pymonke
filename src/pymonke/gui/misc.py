@@ -46,6 +46,10 @@ class Root:
 
     def get_fit_frame(self) -> Any: ...
 
+    def get_additional_arguments(self) -> dict[str, Any]: ...
+
+    def get_plotting_style_arguments(self) -> dict[str, Any]: ...
+
     def __lt__(self, other):
         return len(self.data) < len(other.data)
 

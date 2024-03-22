@@ -14,7 +14,7 @@ def read_txt_into_dataframe(file: str, skiprows: int = 1, **args) -> DataFrame:
     with open(file, 'r') as f:
         if (delim := args.get("delimiter")) is None:
             delim = " "
-        columns = f.readline().replace(delim, " ").replace("\n", "").split(" ")
+        columns = f.readline().replace(delim, " ").replace("\t", " ").replace("\n", "").split(" ")
     data = np.loadtxt(file, skiprows=skiprows, **args)
     return DataFrame(data=data, columns=columns)
 
