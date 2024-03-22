@@ -30,7 +30,6 @@ class StatusFrame(CTkFrame):
         self.labels.popleft()
         for i, label in enumerate(self.labels):
             label.grid(row=i, column=0, sticky="ew")
-        ic(len(self.labels))
 
     def clear(self) -> None:
         while len(self.labels) > 0:

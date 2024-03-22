@@ -26,7 +26,11 @@ class ParametersScrollableFrame(CTkScrollableFrame):
         return list(self.param_frames.keys())
 
     def set_param_values(self, values: dict[str, Any]):
-        pass
+        keys = self.param_frames.keys()
+        if keys != values.keys():
+            raise EntryError("Parameter names do not match.")
+        for key in keys:
+            self.param_frames[key].set_value(values[key])
 
     def delete_parameter_frames(self):
         if self.param_frames is not None:

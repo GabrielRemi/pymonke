@@ -40,6 +40,14 @@ class PlotFrame(CTkFrame):
         _min, _max = self.canvas.ax.get_xlim()
         self.limits_frame.set_bounds(_min, _max)
 
+        ic()
+        # show parameter values after the fit
+        fit_name = get_root(self).get_fit_frame().get_fit_name()
+        if fit_name is not None:
+            result = get_root(self).fit_result[fit_name]
+            get_root(self).get_fit_frame().set_param_values(result.as_dict())
+            ic(result)
+
     def load_from_meta(self) -> None:
         self.plot_data()
         meta = get_meta(self)

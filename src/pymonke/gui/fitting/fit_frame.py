@@ -1,10 +1,12 @@
 from customtkinter import *
 
+from typing import Any
+
 from ..formula.formula_frame import FormulaFrame
 from ..formula.parameter_frame import ParameterFrame
 from .fit_option_menu import FitComboBox
 from ..list_frame import ListFrame
-from ..misc import get_meta
+from ..misc import get_meta, get_root
 from ..plot.limits_frame import LimitsFrame
 
 
@@ -50,6 +52,15 @@ class FitFrame(CTkFrame):
                 else:
                     self.start_parameter_frame.set_parameters(meta_params)
         ic(get_meta(self))
+
+    def set_param_values(self, values: dict[str, Any]):
+        self.formula_frame.parameters.set_param_values(values)
+
+    def set_params_values_from_results(self):
+        fit_name = get_root(self).get_fit_frame().get_fit_name()
+        if fit_name is not None:
+            result = get_root(self).fit_result[fit_name]
+            get_root(self).get_fit_frame().set_param_values(result.as_dict())
 
     def get_fit_type(self):
         if self.fit_type_option.get() == "OLS":
@@ -112,6 +123,7 @@ class FitFrame(CTkFrame):
             self.limits_frame.min.set(val)
         if (val := d.get("x_max_limit")) is not None:
             self.limits_frame.max.set(val)
+        self.set_params_values_from_results()
 
     def update_from_fit_meta(self, _=None):
         """if Values exist in meta[fit_name]. load them in."""

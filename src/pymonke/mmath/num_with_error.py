@@ -70,4 +70,4 @@ class NumWithError:
         return f"NumWithError({self.__x}, {self.__x_error})"
 
     def __str__(self):
-        return self.display_table_separate()
+        return f"{self.__x} +- {self.__x_error}"
