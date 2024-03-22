@@ -8,5 +8,6 @@ from .misc import EntryError
 
 
 install()
+ic.disable()
 
 

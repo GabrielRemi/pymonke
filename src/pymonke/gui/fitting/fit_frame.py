@@ -8,6 +8,7 @@ from .fit_option_menu import FitComboBox
 from ..list_frame import ListFrame
 from ..misc import get_meta, get_root
 from ..plot.limits_frame import LimitsFrame
+from ..dict_frame import DictFrame
 
 
 class FitFrame(CTkFrame):
@@ -36,6 +37,10 @@ class FitFrame(CTkFrame):
         self.limits_frame = LimitsFrame(master=self, label="Fitting Limits")
         self.limits_frame.entry_bindings = [self.load_limits_to_meta]
         self.limits_frame.grid(row=3, column=0, columnspan=2)
+
+        self.plotting_style_arguments = DictFrame(master=self, text="Plotting Style Arguments")
+        self.plotting_style_arguments.return_bindings = [self.update_plotting_style]
+        self.plotting_style_arguments.grid(row=4, column=0, pady=20, columnspan=2)
 
     def update_parameter_entries_from_formula_frame(self):
         params = self.formula_frame.parameters.get_params()
@@ -110,15 +115,32 @@ class FitFrame(CTkFrame):
         get_meta(self)["fits"][val]["start_parameters"] = p0
         ic(get_meta(self))
 
+    # -----PLOTTING-STYLE-----------------------------------------------------------
+    def get_plotting_style_arguments(self) -> dict:
+        return self.plotting_style_arguments.get_args()
+    #
+
+    def load_plotting_style_arguments_from_fit_meta(self):
+        if (fit_name := self.get_fit_name()) is None:
+            return
+        fit_meta = get_meta(self)["fits"][fit_name]
+        if (plotting_style := fit_meta.get("plotting_style")) is not None:
+            self.plotting_style_arguments.load_parameters(plotting_style)
+
     def update_plotting_style(self):
+        ic.enable()
         if (val := self.get_fit_name()) is None:
             return
-        args = get_root(self).get_plotting_style_arguments()
+        ic(val)
+        args = self.get_plotting_style_arguments()
         if get_meta(self)["fits"][val].get("plotting_style") is None:
             get_meta(self)["fits"][val]["plotting_style"] = args
         else:
             get_meta(self)["fits"][val]["plotting_style"].update(args)
         ic(get_meta(self))
+        ic.disable()
+
+    # -----PLOTTING-STYLE-----------------------------------------------------------
 
     def load_limits_to_meta(self):
         if (val := self.get_fit_name()) is None:
@@ -143,8 +165,6 @@ class FitFrame(CTkFrame):
         if (fits := get_meta(self).get("fits")) is None or self.fit_combo_box.selected == "Add Fit":
             return
         fit = fits[self.fit_combo_box.selected]
-        ic()
-        ic(fit)
         if (func := fit.get("function")) is not None:
             self.formula_frame.update_parameters(None, func)
         else:
@@ -154,6 +174,7 @@ class FitFrame(CTkFrame):
         else:
             self.set_fit_type("OLS")
         self.load_limits_from_fit_meta()
+        self.load_plotting_style_arguments_from_fit_meta()
 
     def _fit_combo_on_selection(self, _=None):
         self.fit_combo_box.selected = self.fit_combo_box.get()

@@ -27,14 +27,20 @@ class FitComboBox(CTkComboBox):
             formula_frame = get_root(self).get_fit_frame().formula_frame
             formula_frame.update_formula("")
             formula_frame.update_parameters(None, "")
-        else:  # Rename
-            for i, name in enumerate(old):
-                if name == self.selected:
-                    old[i] = fit_name
+            self.selected = fit_name
+        else:  # Rename or delete
+            if fit_name == "":
+                get_root(self).meta["fits"].pop(self.selected)
+                old.remove(self.selected)
+                self.set("Add Fit")
+                self.selected = "Add Fit"
+            else:
+                for i, name in enumerate(old):
+                    if name == self.selected:
+                        old[i] = fit_name
+                fits[fit_name] = fits.pop(self.selected)
+                self.selected = fit_name
             self.configure(values=old)
-            fits[fit_name] = fits.pop(self.selected)
-        self.selected = fit_name
-        ic(get_meta(self))
 
     def on_selection(self, event=None):
         self.selected = self.get()

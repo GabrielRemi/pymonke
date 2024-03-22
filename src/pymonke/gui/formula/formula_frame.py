@@ -62,7 +62,9 @@ class FormulaFrame(CTkFrame):
     def update_parameters(self, _, text: Optional[str] = None) -> None:
         ic()
         ic(self.text.get(), text)
-        if self.text.get() == "" and text is None:
+        if text is None:
+            text = self.text.get()
+        if text == "":
             self.parameters.delete_parameter_frames()
             return
         try:

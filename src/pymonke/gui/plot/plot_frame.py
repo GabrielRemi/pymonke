@@ -4,10 +4,10 @@ from matplotlib.figure import Figure
 
 from typing import Optional
 
-from .plot_canvas import PlotCanvas
+from ..info_label import InfoLabel
 from .limits_frame import LimitsFrame
 from ..misc import get_meta, get_root
-
+from .plot_canvas import PlotCanvas
 
 class PlotFrame(CTkFrame):
     def __init__(self, **kwargs):
@@ -23,6 +23,9 @@ class PlotFrame(CTkFrame):
         self.button = CTkButton(self, text="Fit Data", command=self.plot_data)
         self.button.grid(row=2, column=0, columnspan=2)
 
+        self.info_label = InfoLabel(master=self, text="")
+        self.info_label.grid(row=3, column=0, columnspan=2, pady=5)
+
     def min_callback(self, _):
         self.limits_frame.min_callback(_)
         val = self.limits_frame.min.get()
@@ -36,9 +39,13 @@ class PlotFrame(CTkFrame):
         self.load_limits_to_meta()
 
     def plot_data(self) -> None:
-        self.canvas.plot_data()
-        _min, _max = self.canvas.ax.get_xlim()
-        self.limits_frame.set_bounds(_min, _max)
+        try:
+            self.canvas.plot_data()
+            _min, _max = self.canvas.ax.get_xlim()
+            self.limits_frame.set_bounds(_min, _max)
+            self.info_label.show_info("Plotting the data and/or fitting successful.")
+        except Exception as e:
+            self.info_label.show_error(e.__repr__())
 
         ic()
         # show parameter values after the fit

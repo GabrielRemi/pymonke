@@ -98,6 +98,8 @@ def rename_parameters(_formula: str, rename: Dict[str, str]) -> str:
 
 
 def replace_funcs(_formula: str) -> str:
+    if _formula == "":
+        return _formula
     tokens = nltk.tokenize.wordpunct_tokenize(_formula)
     params: List[str] = []
     for token in tokens:
