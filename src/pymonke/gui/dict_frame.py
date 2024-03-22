@@ -1,5 +1,6 @@
 from customtkinter import *
 
+from typing import Optional, Any
 
 from .misc import get_root
 
@@ -19,8 +20,9 @@ class EntryPairFrame(CTkFrame):
 
 
 class DictFrame(CTkFrame):
-    def __init__(self, text: str, **kwargs):
+    def __init__(self, text: str, meta: Optional[dict[str, Any]] = None, **kwargs):
         super().__init__(**kwargs)
+        self.meta = meta
         self.label = CTkLabel(self, text=text)
         self.label.grid(row=0, column=0)
 
@@ -39,11 +41,11 @@ class DictFrame(CTkFrame):
         entry.key_var.set(key)
         entry.value.bind("<Return>", self.bindings)
         entry.value_var.set(value)
-        entry.grid(row=n+1, column=0)
+        entry.grid(row=n + 1, column=0)
         entry.delete_button.configure(command=lambda: self.delete_on_button_click(entry))
 
         self.entries.append(entry)
-        self.add_button.grid(row=n+2, column=0)
+        self.add_button.grid(row=n + 2, column=0)
 
     def load_parameters(self, data: dict) -> None:
         self.delete_all()
@@ -51,10 +53,13 @@ class DictFrame(CTkFrame):
             val = data[key]
             if key not in self.ignore_keys:
                 self.add_parameter(key, val)
+        ic(self.meta)
 
     def delete_entry(self, index) -> None:
         entry = self.entries.pop(index)
         entry.destroy()
+        for index, entry in enumerate(self.entries):
+            entry.grid(row=index + 1, column=0)
 
     def delete_last(self) -> None:
         self.delete_entry(-1)
@@ -64,15 +69,15 @@ class DictFrame(CTkFrame):
             self.delete_last()
 
     def delete_on_button_click(self, button: EntryPairFrame):
-        """delete the Button and also remove the entry from meta"""
-        ic.enable()
-        ic()
+        """delete the Button and also remove the entry from meta if given"""
         key = button.key_var.get()
         index = button.grid_info()["row"] - 1
-        get_root(self).get_fit_meta()["plotting_style"].pop(key)
-        self.delete_entry(index)
+        ic(key)
+        ic(self.meta)
         ic(get_root(self).meta)
-        ic.disable()
+        if self.meta is not None:
+            self.meta.pop(key)
+        self.delete_entry(index)
 
     def get_args(self):
         res = dict()
@@ -84,13 +89,22 @@ class DictFrame(CTkFrame):
         return res
 
     def bindings(self, _=None):
+        self.update_meta()
         for binding in self.return_bindings:
             binding()
+
+    def update_meta(self):
+        if self.meta is None:
+            return
+        args = self.get_args()
+        while self.meta != dict():
+            self.meta.popitem()
+        self.meta.update(args)
+        ic(self.meta)
+        ic(get_root(self).meta)
 
     def parse(self, value: str):
         try:
             return float(value)
         except:
             return value
-
-

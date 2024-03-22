@@ -63,22 +63,6 @@ class App(Root, ctk.CTk):
             return None
         return self.meta["fits"][fit]
 
-    # def update_read_data_args(self, _=None):
-    #     if self.meta.get("read_data_args") is None:
-    #         self.meta["read_data_args"] = dict()
-    #     self.meta["read_data_args"].update(self.read_data_arguments_frame.get_args())
-    #     ic(self.meta)
-
-    # def get_plotting_style_arguments(self) -> dict:
-    #     return self.plotting_style_arguments.get_args()
-    #
-    # def load_plotting_style_arguments_from_fit_meta(self):
-    #     if (fit_name := self.fit_frame.get_fit_name()) is None:
-    #         return
-    #     fit_meta = self.meta["fits"][fit_name]
-    #     if (plotting_style := fit_meta.get("plotting_style")) is not None:
-    #         self.plotting_style_arguments.load_parameters(plotting_style)
-
     def load_meta(self):
         if (val := self.data_init.load_meta()) is not None:
             self.meta = val
@@ -108,7 +92,6 @@ class App(Root, ctk.CTk):
     def do_fit(self) -> Fit:
         fit: Fit = Fit(meta_data=self.meta, data=self.data)
         self.fit_result = fit.run()
-        ic(self.fit_result)
         return fit
 
     def get_y(self) -> Optional[Series]:

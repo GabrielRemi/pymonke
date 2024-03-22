@@ -6,6 +6,7 @@ from ..misc import get_root, get_meta
 class FitComboBox(CTkComboBox):
     def __init__(self, **kwargs):
         super().__init__(**kwargs, values=["Add Fit"], command=self.on_selection)
+        self.bind("<<ComboboxSelected>>", self.on_selection)
         self.bind("<Return>", self.add_or_rename)
         self.selected: str = "Add Fit"
 
@@ -41,6 +42,21 @@ class FitComboBox(CTkComboBox):
                 fits[fit_name] = fits.pop(self.selected)
                 self.selected = fit_name
             self.configure(values=old)
+        self.change_meta_of_plotting_arguments()
+
+    def change_meta_of_plotting_arguments(self):
+        # change meta for plotting arguments
+        ic(self.selected)
+        meta = get_meta(self)["fits"].get(self.selected)
+        if meta is not None:
+            val = meta.get("plotting_style")
+            if val is None:
+                meta["plotting_style"] = dict()
+            meta = meta["plotting_style"]
+        get_root(self).get_fit_frame().plotting_style_arguments.meta = meta
+        ic(meta)
+        ic(get_meta(self))
 
     def on_selection(self, event=None):
         self.selected = self.get()
+        self.change_meta_of_plotting_arguments()

@@ -39,7 +39,7 @@ class FitFrame(CTkFrame):
         self.limits_frame.grid(row=3, column=0, columnspan=2)
 
         self.plotting_style_arguments = DictFrame(master=self, text="Plotting Style Arguments")
-        self.plotting_style_arguments.return_bindings = [self.update_plotting_style]
+        # self.plotting_style_arguments.return_bindings = [self.update_plotting_style]
         self.plotting_style_arguments.grid(row=4, column=0, pady=20, columnspan=2)
 
     def update_parameter_entries_from_formula_frame(self):
@@ -176,8 +176,10 @@ class FitFrame(CTkFrame):
         self.load_limits_from_fit_meta()
         self.load_plotting_style_arguments_from_fit_meta()
 
-    def _fit_combo_on_selection(self, _=None):
+    def _fit_combo_on_selection(self, text):
+        ic(f"selection {text}")
         self.fit_combo_box.selected = self.fit_combo_box.get()
+        self.fit_combo_box.change_meta_of_plotting_arguments()
         self.update_from_to_meta()
 
     def _fit_combo_add_or_rename(self, _=None):
