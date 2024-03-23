@@ -6,7 +6,7 @@ from ..misc import get_root, get_meta
 
 
 class FitComboBox(CTkComboBox):
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs, values=["Add Fit"], command=self.on_selection)
         self.bind("<Return>", self.add_or_rename)
 
@@ -15,7 +15,7 @@ class FitComboBox(CTkComboBox):
 
         self.selected: str = "Add Fit"
 
-    def add_or_rename(self, _=None) -> None:
+    def add_or_rename(self, _: Any = None) -> None:
         if (fits := get_meta(self).get("fits")) is None:
             get_meta(self)["fits"] = fits = dict()
 
@@ -48,7 +48,7 @@ class FitComboBox(CTkComboBox):
         for binding in self.return_bindings:
             binding()
 
-    def on_selection(self, event=None):
+    def on_selection(self, _: Any = None) -> None:
         self.selected = self.get()
         for binding in self.selection_bindings:
             binding()

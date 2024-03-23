@@ -1,11 +1,11 @@
-from customtkinter import *
+from customtkinter import CTkFrame, CTkEntry, StringVar, CTkLabel
 
 from typing import Any, Callable
 
 
 class ParameterFrame(CTkFrame):
-    def __init__(self, name: str, **args):
-        super().__init__(**args)
+    def __init__(self, name: str, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
 
         self.name = name
         self.value = CTkLabel(master=self, text="", width=120)
@@ -18,25 +18,27 @@ class ParameterFrame(CTkFrame):
     def get_name(self) -> str:
         return self.name
 
-    def set_name(self, name: str):
+    def set_name(self, name: str) -> None:
         self.name = name
         self.name_var.set(name)
 
     def get_entry(self) -> str:
-        return self.name_entry.get()
+        ret = self.name_entry.get()
+        assert isinstance(ret, str)
+        return ret
 
-    def reset_entry(self):
+    def reset_entry(self) -> None:
         """Resets the entry to the name."""
         self.set_name(self.name)
 
-    def set_value(self, value: Any):
+    def set_value(self, value: Any) -> None:
         self.value.configure(text=str(value))
 
-    def rename(self, _):
+    def rename(self, _: Any) -> None:
         temp = self.master
         while True:
             if hasattr(temp, "rename"):
-                if isinstance(temp.rename, Callable):
+                if callable(temp.rename):
                     temp.rename()
                     return
             temp = temp.master

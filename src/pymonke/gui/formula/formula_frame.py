@@ -2,17 +2,17 @@ from customtkinter import CTkFrame, CTkEntry, CTkLabel
 
 import sys
 from tkinter import StringVar
-from typing import Optional, Callable
+from typing import Optional, Callable, Any
 
 from pymonke.fit.parse import parse_function, replace_funcs
 from pymonke.fit.fit import func_type
-from pymonke.gui import EntryError
+from ..misc import EntryError
 from .parameters_scrollable_frame import ParametersScrollableFrame
 
 
 class FormulaFrame(CTkFrame):
-    def __init__(self, **args) -> None:
-        super().__init__(**args)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
         self.__text = StringVar(master=self, value="", name="FormulaFrameText")
         self.function: Optional[func_type] = None
         self.params: list[str] = []
@@ -55,7 +55,7 @@ class FormulaFrame(CTkFrame):
 
         self.parameters.generate_parameter_frames(self.params)
 
-    def entry_callback(self, _event=None) -> None:
+    def entry_callback(self, _event: Any = None) -> None:
         self.text = self.text
         for binding in self.entry_bindings:
             binding()
@@ -73,8 +73,8 @@ class FormulaFrame(CTkFrame):
             print(e, file=sys.stderr)
             exit(-1)
 
-    def reset_error_label(self):
+    def reset_error_label(self) -> None:
         self.error_label.configure(text="")
 
-    def set_error_label(self, text: str):
+    def set_error_label(self, text: str) -> None:
         self.error_label.configure(text=text)

@@ -1,12 +1,13 @@
-from customtkinter import *
+from customtkinter import CTkFrame
 import pandas as pd
 
 import json
+from typing import Any, Optional
 
 from .browse_save_frame import BrowseSaveFrame
 from ..browse_frame import BrowseFrame
 from ..entry_label_frame import EntryLabelFrame
-from ..info_label import InfoLabel
+from ..misc import get_root
 from ..misc import get_data, get_meta, get_root
 from .status_frame import StatusFrame
 
@@ -15,7 +16,7 @@ from pymonke.misc.dataframe import get_error_column_name
 
 
 class DataInitFrame(CTkFrame):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         CTkFrame.__init__(self, **kwargs)
 
         self.browse_data_frame = BrowseFrame(file_type="*.csv; *.txt", master=self, placeholder="Enter the data file")
@@ -39,7 +40,7 @@ class DataInitFrame(CTkFrame):
         self.save_meta_frame.save_button.configure(command=self.save_meta_to_file)
         self.save_meta_frame.grid(row=3, column=0, columnspan=2)
 
-    def load_data(self, browse: bool = True) -> pd.DataFrame | None:
+    def load_data(self, browse: bool = True) -> Optional[pd.DataFrame]:
         try:
             if browse:
                 self.browse_data_frame.browse()
@@ -54,18 +55,19 @@ class DataInitFrame(CTkFrame):
             self.status.add_error(str(e))
             return None
 
-    def load_meta(self) -> dict | None:
+    def load_meta(self) -> Optional[dict[str, Any]]:
         try:
             self.load_meta_frame.browse()
+            # TODO loading two json data files after another does not work, needs to delete all the previous fits first
             file_path = self.load_meta_frame.file_path.get()
-            data = json.loads(open(file_path).read())
+            data: dict[str, Any] = json.loads(open(file_path).read())
             self.status.add_info("Meta Data loaded successfully")
             return data
         except Exception as e:
             self.status.add_error(str(e))
             return None
 
-    def check_xy_input(self, xy: str):
+    def check_xy_input(self, xy: str) -> None:
         if "x" in xy:
             if (text := self.x_data_frame.text.get()) is not None and self.entry_in_dataframe(text):
                 self.status.add_info("X column found")
@@ -74,7 +76,9 @@ class DataInitFrame(CTkFrame):
         if "y" in xy:
             if (text := self.y_data_frame.text.get()) is not None and self.entry_in_dataframe(text):
                 self.status.add_info("Y column found")
-                if get_error_column_name(get_data(self), text) is None:
+                data = get_data(self)
+                assert isinstance(data, pd.DataFrame)
+                if get_error_column_name(data, text) is None:
                     self.status.add_error("Y Error not found")
 
             else:
@@ -86,13 +90,13 @@ class DataInitFrame(CTkFrame):
         else:
             return False
 
-    def save_x_name(self, _=None):
+    def save_x_name(self, _: Any = None) -> None:
         x_name = self.x_data_frame.text.get()
         get_meta(self)["x"] = x_name
         self.check_xy_input("x")
         get_root(self).get_plot_frame().plot_data()
 
-    def save_y_name(self, _=None):
+    def save_y_name(self, _: Any = None) -> None:
         y_name = self.y_data_frame.text.get()
         get_meta(self)["y"] = y_name
         self.check_xy_input("y")

@@ -1,11 +1,14 @@
-from customtkinter import *
+from customtkinter import CTkFrame, CTkLabel, CTkEntry, StringVar
 
 from functools import partial
+from typing import Any
 
 
 class EntryLabelFrame(CTkFrame):
     """A Frame with an entry next to a label"""
-    def __init__(self, placeholder: str = "Entry", label: str = "Label", left_label: bool = True, **kwargs):
+
+    def __init__(self, placeholder: str = "Entry", label: str = "Label", left_label: bool = True,
+                 **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         self.text = StringVar(master=self)
@@ -20,7 +23,7 @@ class EntryLabelFrame(CTkFrame):
             label_grid(column=1)
             self.entry.grid(row=0, column=0)
 
-    def check_text_if_empty(self, _=None):
+    def check_text_if_empty(self, _: Any = None) -> None:
         if self.text.get() == "":
             self.entry.configure(textvariable=None)
         else:

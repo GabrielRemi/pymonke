@@ -2,11 +2,9 @@ from customtkinter import CTkFrame, StringVar, CTkEntry, CTkLabel
 
 from typing import Callable, Any, Optional
 
-from ..misc import get_meta
-
 
 class LimitsFrame(CTkFrame):
-    def __init__(self, label: str = "", **kwargs):
+    def __init__(self, label: str = "", **kwargs: Any) -> None:
         CTkFrame.__init__(self, **kwargs)
         if label != "":
             self.label = CTkLabel(master=self, text=label)
@@ -33,7 +31,7 @@ class LimitsFrame(CTkFrame):
         return self.__min
 
     @min.setter
-    def min(self, value: Optional[float]):
+    def min(self, value: Optional[float]) -> None:
         if value is None:
             self.__min = None
             self.min_var.set("")
@@ -58,7 +56,7 @@ class LimitsFrame(CTkFrame):
         return self.__max
 
     @max.setter
-    def max(self, value: Optional[float]):
+    def max(self, value: Optional[float]) -> None:
         if value is None:
             self.__max = None
             self.max_var.set("")
@@ -70,7 +68,7 @@ class LimitsFrame(CTkFrame):
         self.min = _min
         self.max = _max
 
-    def set_min(self, value: Optional[float]):
+    def set_min(self, value: Optional[float]) -> None:
         if self.max is not None and value is not None:
             if value >= self.max:
                 self.min = self.min
@@ -78,14 +76,14 @@ class LimitsFrame(CTkFrame):
 
         self.min = value
 
-    def set_max(self, value: Optional[float]):
+    def set_max(self, value: Optional[float]) -> None:
         if self.min is not None and value is not None:
             if value <= self.min:
                 self.max = self.max
                 return
         self.max = value
 
-    def min_callback(self, _):
+    def min_callback(self, _: Any) -> None:
         try:
             self.set_min(self.get_min_var())
             for binding in self.entry_bindings:
@@ -93,7 +91,7 @@ class LimitsFrame(CTkFrame):
         except ValueError:
             self.min = self.min
 
-    def max_callback(self, _):
+    def max_callback(self, _: Any) -> None:
         try:
             self.set_max(self.get_max_var())
             for binding in self.entry_bindings:

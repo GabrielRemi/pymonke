@@ -1,13 +1,14 @@
-from customtkinter import *
+from customtkinter import CTkFrame, CTkButton
 
 import json
+from typing import Any
 
 from ..browse_frame import BrowseFrame
 from ..misc import get_meta
 
 
 class BrowseSaveFrame(CTkFrame):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.save_button = CTkButton(master=self, text="Save", width=30, command=self.save)
         self.save_button.grid(row=0, column=0)

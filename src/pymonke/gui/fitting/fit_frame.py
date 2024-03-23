@@ -11,7 +11,7 @@ from ..dict_frame import DictFrame
 
 
 class FitFrame(CTkFrame):
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         CTkFrame.__init__(self, **kwargs)
         self.formula_frame = FormulaFrame(master=self, width=6000)
         self.formula_frame.grid(row=0, column=0, sticky="nsew", columnspan=2)
@@ -60,11 +60,11 @@ class FitFrame(CTkFrame):
                     return
         self.start_parameter_frame.set_parameters([0] * len(params))
 
-    def set_param_values(self, values: dict[str, Any]):
+    def set_param_values(self, values: dict[str, Any]) -> None:
         self.formula_frame.parameters.set_param_values(values)
 
-    def set_params_values_from_results(self):
-        fit_name = get_root(self).get_fit_frame().get_fit_name()
+    def set_params_values_from_results(self) -> None:
+        fit_name = self.get_fit_name()
         if fit_name is not None:
             fit_result = get_root(self).fit_result
             if fit_result is not None:
@@ -72,19 +72,21 @@ class FitFrame(CTkFrame):
                 if result is not None:
                     get_root(self).get_fit_frame().set_param_values(result.as_dict())
 
-    def get_fit_type(self):
+    def get_fit_type(self) -> str:
         if self.fit_type_option.get() == "OLS":
             return "optimize.curve_fit"
-        if self.fit_type_option.get() == "ODR":
+        elif self.fit_type_option.get() == "ODR":
             return "odr"
+        else:
+            raise Exception("unknown fitting type")
 
-    def set_fit_type(self, _type: str):
+    def set_fit_type(self, _type: str) -> None:
         if _type == "optimize.curve_fit":
             self.fit_type_option.set("OLS")
         elif _type == "odr":
             self.fit_type_option.set("ODR")
 
-    def update_to_meta(self, _=None):
+    def update_to_meta(self, _: Any = None) -> None:
         """update meta from all child objects"""
         if self.fit_meta is None:
             return
@@ -99,13 +101,12 @@ class FitFrame(CTkFrame):
         }
 
         self.fit_meta.update(update)
-        ic(get_meta(self))
 
     # -----------------------------------------------------------------------------
     # -------------------------Fit Combo Box---------------------------------------
     # -----------------------------------------------------------------------------
 
-    def get_fit_name(self) -> str | None:
+    def get_fit_name(self) -> Optional[str]:
         if (val := self.fit_combo_box.selected) == "Add Fit":
             return None
         else:
@@ -115,7 +116,9 @@ class FitFrame(CTkFrame):
         if (val := self.fit_combo_box.selected) == "Add Fit":
             return None
         else:
-            return get_meta(self)["fits"][val]
+            ret = get_meta(self)["fits"][val]
+            assert isinstance(ret, dict)
+            return ret
 
     def set_fit_meta(self) -> None:
         """Set self.fit_meta to the meta dictionary that corresponds to the fit set in the combo box."""
@@ -137,24 +140,24 @@ class FitFrame(CTkFrame):
 
         return p0
 
-    def update_start_parameters(self, _=None):
+    def update_start_parameters(self, _: Any = None) -> None:
         p0 = self.get_start_parameters()
 
         if self.fit_meta is not None:
             self.fit_meta.update({"start_parameters": p0})
 
     # -----PLOTTING-STYLE-----------------------------------------------------------
-    def get_plotting_style_arguments(self) -> dict:
+    def get_plotting_style_arguments(self) -> dict[str, float | str]:
         return self.plotting_style_arguments.get_args()
 
-    def load_plotting_style_arguments_from_fit_meta(self):
+    def load_plotting_style_arguments_from_fit_meta(self) -> None:
         if (fit_name := self.get_fit_name()) is None:
             return
         fit_meta = get_meta(self)["fits"][fit_name]
         if (plotting_style := fit_meta.get("plotting_style")) is not None:
             self.plotting_style_arguments.load_parameters(plotting_style)
 
-    def update_plotting_style(self):
+    def update_plotting_style(self) -> None:
         if (val := self.get_fit_name()) is None:
             return
         args = self.get_plotting_style_arguments()
@@ -163,7 +166,7 @@ class FitFrame(CTkFrame):
         else:
             get_meta(self)["fits"][val]["plotting_style"].update(args)
 
-    def load_limits_from_fit_meta(self):
+    def load_limits_from_fit_meta(self) -> None:
         if (val := self.get_fit_name()) is None:
             return
         d = get_meta(self)["fits"][val]
@@ -173,7 +176,7 @@ class FitFrame(CTkFrame):
         self.plot_limits_frame.max = d.get("plot_x_max_limit")
         self.set_params_values_from_results()
 
-    def load_from_fit_meta(self, _=None):
+    def load_from_fit_meta(self, _: Any = None) -> None:
         """if Values exist in meta[fit_name]. load them in."""
         if (fit := self.get_fit_meta()) is None:
             return
@@ -188,11 +191,11 @@ class FitFrame(CTkFrame):
         self.load_plotting_style_arguments_from_fit_meta()
         self.update_start_parameter_entries_from_formula_frame()
 
-    def update_from_to_meta(self, _=None) -> None:
+    def update_from_to_meta(self, _: Any = None) -> None:
         self.load_from_fit_meta()
         self.update_to_meta()
 
-    def load_from_meta(self, _=None) -> None:
+    def load_from_meta(self, _: Any = None) -> None:
         meta = get_meta(self)
         if (fits := meta.get("fits")) is not None:
             if len(fits) >= 1:

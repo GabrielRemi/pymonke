@@ -1,10 +1,10 @@
 from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkEntry, StringVar
 
-from typing import Callable
+from typing import Callable, Any
 
 
 class ListFrame(CTkFrame):
-    def __init__(self, text: str, has_add_button: bool = True, **kwargs) -> None:
+    def __init__(self, text: str, has_add_button: bool = True, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.label = CTkLabel(self, text=text)
         self.label.grid(row=0, column=0)
@@ -20,7 +20,7 @@ class ListFrame(CTkFrame):
 
         self.entry_bindings: list[Callable[[], None]] = []
 
-    def add_parameter(self, val: str = ""):
+    def add_parameter(self, val: str = "") -> None:
         n = len(self.entries)
         entry = Entry(master=self, text=val)
         entry.grid(row=n+1, column=0)
@@ -31,24 +31,24 @@ class ListFrame(CTkFrame):
         if self.has_add_button:
             self.add_button.grid(row=n+2, column=0)
 
-    def set_parameters(self, parameters: list):
+    def set_parameters(self, parameters: list[str]) -> Any:
         self.delete_all()
         for param in parameters:
             self.add_parameter(param)
 
-    def delete_all(self):
+    def delete_all(self) -> None:
         for entry in self.entries:
             entry.destroy()
         self.entries = []
 
-    def _update_list(self, _=None):
+    def _update_list(self, _: Any = None) -> None:
         self.text_list = self.get_list()
 
-    def get_list(self):
+    def get_list(self) -> list[str]:
         return [i.string_var.get() for i in self.entries]
 
 
 class Entry(CTkEntry):
-    def __init__(self, text: str = "",  **kwargs):
+    def __init__(self, text: str = "",  **kwargs: Any) -> None:
         self.string_var = StringVar(value=text)
         super().__init__(textvariable=self.string_var, **kwargs)

@@ -1,11 +1,9 @@
 from customtkinter import CTkFrame, CTkEntry, CTkButton, CTkLabel, StringVar
 from typing import Optional, Any, Callable
 
-from .misc import get_root
-
 
 class EntryPairFrame(CTkFrame):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.key_var = StringVar()
         self.key = CTkEntry(master=self, textvariable=self.key_var)
@@ -20,7 +18,7 @@ class EntryPairFrame(CTkFrame):
 
 
 class DictFrame(CTkFrame):
-    def __init__(self, text: str, meta: Optional[dict[str, Any]] = None, **kwargs) -> None:
+    def __init__(self, text: str, meta: Optional[dict[str, Any]] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.meta = meta
         self.label = CTkLabel(self, text=text)
@@ -34,7 +32,7 @@ class DictFrame(CTkFrame):
         self.return_bindings: list[Callable[[], None]] = []
         self.ignore_keys: list[str] = []
 
-    def add_parameter(self, key: str = "", value: str = ""):
+    def add_parameter(self, key: str = "", value: str = "") -> None:
         n = len(self.entries)
         entry = EntryPairFrame(master=self)
         entry.key.bind("<Return>", self.bindings)
@@ -47,14 +45,14 @@ class DictFrame(CTkFrame):
         self.entries.append(entry)
         self.add_button.grid(row=n + 2, column=0)
 
-    def load_parameters(self, data: dict) -> None:
+    def load_parameters(self, data: dict[str, str]) -> None:
         self.delete_all()
         for key in data.keys():
             val = data[key]
             if key not in self.ignore_keys:
                 self.add_parameter(key, val)
 
-    def delete_entry(self, index) -> None:
+    def delete_entry(self, index: int) -> None:
         entry = self.entries.pop(index)
         entry.destroy()
         for index, entry in enumerate(self.entries):
@@ -67,7 +65,7 @@ class DictFrame(CTkFrame):
         for _ in range(len(self.entries)):
             self.delete_last()
 
-    def delete_on_button_click(self, button: EntryPairFrame):
+    def delete_on_button_click(self, button: EntryPairFrame) -> None:
         """delete the Button and also remove the entry from meta if given"""
         key = button.key_var.get()
         index = button.grid_info()["row"] - 1
@@ -75,7 +73,7 @@ class DictFrame(CTkFrame):
             self.meta.pop(key)
         self.delete_entry(index)
 
-    def get_args(self):
+    def get_args(self) -> dict[str, float | str]:
         res = dict()
         for entry in self.entries:
             if (val := entry.value_var.get()) == "":
@@ -84,12 +82,12 @@ class DictFrame(CTkFrame):
 
         return res
 
-    def bindings(self, _=None):
+    def bindings(self, _: Any = None) -> None:
         self.update_meta()
         for binding in self.return_bindings:
             binding()
 
-    def update_meta(self):
+    def update_meta(self) -> None:
         if self.meta is None:
             return
         args = self.get_args()
@@ -97,7 +95,7 @@ class DictFrame(CTkFrame):
             self.meta.popitem()
         self.meta.update(args)
 
-    def parse(self, value: str):
+    def parse(self, value: str) -> float | str:
         try:
             return float(value)
         except:
