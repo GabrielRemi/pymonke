@@ -1,9 +1,9 @@
-from customtkinter import *
+from customtkinter import CTkFrame, CTkOptionMenu
+from icecream import ic
 
-from typing import Any
+from typing import Any, Optional
 
 from ..formula.formula_frame import FormulaFrame
-from ..formula.parameter_frame import ParameterFrame
 from .fit_option_menu import FitComboBox
 from ..list_frame import ListFrame
 from ..misc import get_meta, get_root
@@ -12,7 +12,7 @@ from ..dict_frame import DictFrame
 
 
 class FitFrame(CTkFrame):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         CTkFrame.__init__(self, **kwargs)
         self.formula_frame = FormulaFrame(master=self, width=6000)
         self.formula_frame.grid(row=0, column=0, sticky="nsew", columnspan=2)
@@ -21,9 +21,11 @@ class FitFrame(CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+        self.fit_meta: Optional[dict[str, Any]] = None
+
         self.fit_combo_box = FitComboBox(master=self)
-        self.fit_combo_box.configure(command=self._fit_combo_on_selection)
-        self.fit_combo_box.bind("<Return>", self.update_from_fit_meta)
+        self.fit_combo_box.selection_bindings = [self.set_fit_meta, self.load_from_fit_meta]
+        self.fit_combo_box.return_bindings = [self.set_fit_meta, self.load_from_fit_meta]
         self.fit_combo_box.grid(row=1, column=0)
 
         self.fit_type_option = CTkOptionMenu(master=self, values=["OLS", "ODR"], command=self.update_to_meta)
@@ -35,14 +37,19 @@ class FitFrame(CTkFrame):
         self.start_parameter_frame.grid(row=2, column=0, columnspan=2, pady=20)
 
         self.limits_frame = LimitsFrame(master=self, label="Fitting Limits")
-        self.limits_frame.entry_bindings = [self.load_limits_to_meta]
+        self.limits_frame.entry_bindings = [self.update_to_meta]
         self.limits_frame.grid(row=3, column=0, columnspan=2)
+
+        self.plot_limits_frame = LimitsFrame(master=self, label="Plotting Limits")
+        self.plot_limits_frame.entry_bindings = [self.update_to_meta]
+        self.plot_limits_frame.grid(row=4, column=0, columnspan=2)
 
         self.plotting_style_arguments = DictFrame(master=self, text="Plotting Style Arguments")
         # self.plotting_style_arguments.return_bindings = [self.update_plotting_style]
-        self.plotting_style_arguments.grid(row=4, column=0, pady=20, columnspan=2)
+        self.plotting_style_arguments.grid(row=5, column=0, pady=20, columnspan=2)
 
     def update_parameter_entries_from_formula_frame(self):
+        ic()
         params = self.formula_frame.parameters.get_params()
         if params is None:
             self.start_parameter_frame.delete_all()
@@ -84,13 +91,24 @@ class FitFrame(CTkFrame):
 
     def update_to_meta(self, _=None):
         """update meta from all child objects"""
-        if (fits := get_meta(self).get("fits")) is None or self.fit_combo_box.selected == "Add Fit":
-            return
-        fit = fits[self.fit_combo_box.selected]
-        fit["fit_type"] = self.get_fit_type()
-        fit["function"] = self.formula_frame.text.get()
         ic()
+        if self.fit_meta is None:
+            return
+        update = {
+            "fit_type": self.get_fit_type(),
+            "function": self.formula_frame.text.get(),
+            "x_min_limit": self.limits_frame.min,
+            "x_max_limit": self.limits_frame.max,
+            "plot_x_min_limit": self.plot_limits_frame.min,
+            "plot_x_max_limit": self.plot_limits_frame.max,
+        }
+
+        self.fit_meta.update(update)
         ic(get_meta(self))
+
+    # -----------------------------------------------------------------------------
+    # -------------------------Fit Combo Box---------------------------------------
+    # -----------------------------------------------------------------------------
 
     def get_fit_name(self) -> str | None:
         if (val := self.fit_combo_box.selected) == "Add Fit":
@@ -98,8 +116,18 @@ class FitFrame(CTkFrame):
         else:
             return val
 
+    def get_fit_meta(self) -> Optional[dict[str, Any]]:
+        if (val := self.fit_combo_box.selected) == "Add Fit":
+            return None
+        else:
+            return get_meta(self)["fits"][val]
+
+    def set_fit_meta(self) -> None:
+        """Set self.fit_meta to the meta dictionary that corresponds to the fit set in the combo box."""
+        self.fit_meta = self.get_fit_meta()
+
     def get_start_parameters(self) -> list[float]:
-        p0 = []
+        p0: list[float] = []
         for param in self.start_parameter_frame.get_list():
             if param == "":
                 p0.append(0)
@@ -114,6 +142,9 @@ class FitFrame(CTkFrame):
             return
         get_meta(self)["fits"][val]["start_parameters"] = p0
         ic(get_meta(self))
+
+    def load_start_parameters_from_fit_meta(self) -> None:
+        pass
 
     # -----PLOTTING-STYLE-----------------------------------------------------------
     def get_plotting_style_arguments(self) -> dict:
@@ -140,27 +171,17 @@ class FitFrame(CTkFrame):
         ic(get_meta(self))
         ic.disable()
 
-    # -----PLOTTING-STYLE-----------------------------------------------------------
-
-    def load_limits_to_meta(self):
-        if (val := self.get_fit_name()) is None:
-            return
-        d = get_meta(self)["fits"][val]
-        d["x_min_limit"] = float(self.limits_frame.min.get())
-        d["x_max_limit"] = float(self.limits_frame.max.get())
-        ic(get_meta(self))
-
     def load_limits_from_fit_meta(self):
         if (val := self.get_fit_name()) is None:
             return
         d = get_meta(self)["fits"][val]
-        if (val := d.get("x_min_limit")) is not None:
-            self.limits_frame.min.set(val)
-        if (val := d.get("x_max_limit")) is not None:
-            self.limits_frame.max.set(val)
+        self.limits_frame.min = d.get("x_min_limit")
+        self.limits_frame.max = d.get("x_max_limit")
+        self.plot_limits_frame.min = d.get("plot_x_min_limit")
+        self.plot_limits_frame.max = d.get("plot_x_max_limit")
         self.set_params_values_from_results()
 
-    def update_from_fit_meta(self, _=None):
+    def load_from_fit_meta(self, _=None):
         """if Values exist in meta[fit_name]. load them in."""
         if (fits := get_meta(self).get("fits")) is None or self.fit_combo_box.selected == "Add Fit":
             return
@@ -168,26 +189,19 @@ class FitFrame(CTkFrame):
         if (func := fit.get("function")) is not None:
             self.formula_frame.update_parameters(None, func)
         else:
-            self.formula_frame.update_parameters("")
+            self.formula_frame.text.set("")
+            self.formula_frame.update_formula("")
+            self.formula_frame.update_parameters(None, text="")
         if (fit_type := fit.get("fit_type")) is not None:
             self.set_fit_type(fit_type)
         else:
             self.set_fit_type("OLS")
         self.load_limits_from_fit_meta()
         self.load_plotting_style_arguments_from_fit_meta()
-
-    def _fit_combo_on_selection(self, text):
-        ic(f"selection {text}")
-        self.fit_combo_box.selected = self.fit_combo_box.get()
-        self.fit_combo_box.change_meta_of_plotting_arguments()
-        self.update_from_to_meta()
-
-    def _fit_combo_add_or_rename(self, _=None):
-        self.fit_combo_box.add_or_rename()
-        self.update_from_fit_meta()
+        self.update_start_parameters()
 
     def update_from_to_meta(self, _=None) -> None:
-        self.update_from_fit_meta()
+        self.load_from_fit_meta()
         self.update_to_meta()
 
     def load_from_meta(self, _=None) -> None:
@@ -198,4 +212,4 @@ class FitFrame(CTkFrame):
                 self.fit_combo_box.configure(values=[*(keys := list(fits.keys())), "Add Fit"])
                 self.fit_combo_box.set(keys[0])
                 self.fit_combo_box.selected = keys[0]
-                self.update_from_fit_meta()
+                self.load_from_fit_meta()

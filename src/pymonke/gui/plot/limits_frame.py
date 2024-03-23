@@ -1,4 +1,6 @@
-from customtkinter import *
+from customtkinter import CTkFrame, StringVar, CTkEntry, CTkLabel
+
+from typing import Callable, Any, Optional
 
 from ..misc import get_meta
 
@@ -10,53 +12,91 @@ class LimitsFrame(CTkFrame):
             self.label = CTkLabel(master=self, text=label)
             self.label.grid(row=0, column=0)
 
-        self.min = StringVar(value="min")
-        self.max = StringVar(value="max")
-        self.lower_bound: float = 0
-        self.upper_bound: float = 1
-        self.set_bounds(0, 1)
+        self.min_var = StringVar(value="")
+        self.max_var = StringVar(value="")
+        self.__min: Optional[float] = None
+        self.__max: Optional[float] = None
+        self.set_limits(None, None)
 
-        self.entry_bindings = []
+        self.entry_bindings: list[Callable[[], None]] = []
 
-        self.min_entry = CTkEntry(self, textvariable=self.min)
+        self.min_entry = CTkEntry(self, textvariable=self.min_var)
         self.min_entry.bind("<Return>", command=self.min_callback)
-        self.max_entry = CTkEntry(self, textvariable=self.max)
+        self.max_entry = CTkEntry(self, textvariable=self.max_var)
         self.max_entry.bind("<Return>", command=self.max_callback)
-
-        # for binding in self.entry_bindings:
-        #     self.min_entry.bind("<Return>", command=binding)
-        #     self.max_entry.bind("<Return>", command=binding)
 
         self.min_entry.grid(row=1, column=0)
         self.max_entry.grid(row=1, column=1)
 
-    def set_bounds(self, _min: float, _max: float) -> None:
-        self.lower_bound = _min
-        self.upper_bound = _max
-        self.min.set(str(_min))
-        self.max.set(str(_max))
+    @property
+    def min(self) -> Optional[float]:
+        return self.__min
 
-    def set_min(self, value: float):
-        if value >= (max := float(self.max.get())):
-            value = max
-            value -= (max - self.lower_bound) / max * 0.001
-        self.min.set(str(value))
-        # get_meta(self)["x_min_limit"] = value
+    @min.setter
+    def min(self, value: Optional[float]):
+        if value is None:
+            self.__min = None
+            self.min_var.set("")
+        else:
+            self.__min = value
+            self.min_var.set(str(value))
 
-    def set_max(self, value: float):
-        if value <= (_min := float(self.min.get())):
-            value = _min
-            value += (self.upper_bound - _min) / _min * 0.001
-        self.max.set(str(value))
-        # get_meta(self)["x_max_limit"] = value
+    def get_min_var(self) -> Optional[float]:
+        if (val := self.min_var.get()) == "":
+            return None
+        else:
+            return float(val)
+
+    def get_max_var(self) -> Optional[float]:
+        if (val := self.max_var.get()) == "":
+            return None
+        else:
+            return float(val)
+
+    @property
+    def max(self) -> Optional[float]:
+        return self.__max
+
+    @max.setter
+    def max(self, value: Optional[float]):
+        if value is None:
+            self.__max = None
+            self.max_var.set("")
+        else:
+            self.__max = value
+            self.max_var.set(str(value))
+
+    def set_limits(self, _min: Optional[float], _max: Optional[float]) -> None:
+        self.min = _min
+        self.max = _max
+
+    def set_min(self, value: Optional[float]):
+        if self.max is not None and value is not None:
+            if value >= self.max:
+                self.min = self.min
+                return
+
+        self.min = value
+
+    def set_max(self, value: Optional[float]):
+        if self.min is not None and value is not None:
+            if value <= self.min:
+                self.max = self.max
+                return
+        self.max = value
 
     def min_callback(self, _):
-        self.set_min(float(self.min.get()))
-        for binding in self.entry_bindings:
-            binding()
+        try:
+            self.set_min(self.get_min_var())
+            for binding in self.entry_bindings:
+                binding()
+        except ValueError:
+            self.min = self.min
 
     def max_callback(self, _):
-        self.set_max(float(self.max.get()))
-        for binding in self.entry_bindings:
-            binding()
-
+        try:
+            self.set_max(self.get_max_var())
+            for binding in self.entry_bindings:
+                binding()
+        except ValueError:
+            self.max = self.max

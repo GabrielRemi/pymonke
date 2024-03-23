@@ -1,5 +1,4 @@
 from customtkinter import *
-
 from typing import Optional, Any
 
 from .misc import get_root

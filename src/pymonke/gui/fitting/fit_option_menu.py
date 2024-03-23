@@ -1,21 +1,26 @@
-from customtkinter import *
+from customtkinter import CTkComboBox
+
+from typing import Callable, Any
 
 from ..misc import get_root, get_meta
 
 
 class FitComboBox(CTkComboBox):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs, values=["Add Fit"], command=self.on_selection)
-        self.bind("<<ComboboxSelected>>", self.on_selection)
         self.bind("<Return>", self.add_or_rename)
+
+        self.selection_bindings: list[Callable[[], None]] = []
+        self.return_bindings: list[Callable[[], None]] = []
+
         self.selected: str = "Add Fit"
 
-    def add_or_rename(self, _):
+    def add_or_rename(self, _=None) -> None:
         if (fits := get_meta(self).get("fits")) is None:
             get_meta(self)["fits"] = fits = dict()
 
-        fit_name = self.get()
-        old: list = self.cget("values")
+        fit_name: str = self.get()
+        old: list[str] = self.cget("values")
         if fit_name in old:
             return
         if self.selected == "Add Fit":  # Add
@@ -42,7 +47,9 @@ class FitComboBox(CTkComboBox):
                 fits[fit_name] = fits.pop(self.selected)
                 self.selected = fit_name
             self.configure(values=old)
-        self.change_meta_of_plotting_arguments()
+        # self.change_meta_of_plotting_arguments()
+        for binding in self.return_bindings:
+            binding()
 
     def change_meta_of_plotting_arguments(self):
         # change meta for plotting arguments
@@ -59,4 +66,6 @@ class FitComboBox(CTkComboBox):
 
     def on_selection(self, event=None):
         self.selected = self.get()
-        self.change_meta_of_plotting_arguments()
+        for binding in self.selection_bindings:
+            binding()
+        # self.change_meta_of_plotting_arguments()

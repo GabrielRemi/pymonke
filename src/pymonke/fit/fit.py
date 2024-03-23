@@ -3,6 +3,7 @@ from typing import List, Dict, Tuple, Callable, TypeAlias, Optional, Any
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.figure import Figure, SubFigure
+from matplotlib.axes import Axes
 from mypy_extensions import VarArg
 import numpy as np
 from pandas import DataFrame, Series
@@ -50,44 +51,19 @@ class Fit:
 
         return names
 
-    def plot(self, figure_id: Optional[int | str | Figure | SubFigure] = None):
+    # ------------------------------------------------------------------------------------
+    # -------------------------------Plot with Matplotlib---------------------------------
+    # ------------------------------------------------------------------------------------
+    def plot(self, figure_id: Optional[int | str | Figure | SubFigure] = None, ax: Optional[Axes] = None):
         if (style := self.meta_data.get("figure_style")) is None:
             style = "science"
         plt.style.use(style)
-        if (size := self.meta_data.get("figure_size")) is None:
-            size = (6, 4.7)
-        if (dpi := self.meta_data.get("figure_dpi")) is None:
-            dpi = 120
-        plt.figure(num=figure_id, figsize=size, dpi=dpi)
-        x, y = self.column_names["x"], self.column_names["y"]
-        sx, sy = self.column_names.get("x error"), self.column_names["y error"]
-        if sx is None:
-            sx = 0
-        else:
-            sx = self.data[sx]
-
-        plotting_style = {
-            "linestyle": "",
-            "ms": 3,
-            "marker": "o",
-            "capsize": 2.5,
-            "zorder": 100
-        }
-
-        if (more_style := self.meta_data.get("plotting_style")) is not None:
-            plotting_style.update(more_style)
-
-        plt.xlim(self.__get_xlim(self.meta_data))
-        plt.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style)
-
-        if self.result is not None:
-            for fit_name in self.result.keys():
-                self.__plot_fit(fit_name, self.result[fit_name])
-
-    def plot_ax(self, ax):
-        if (style := self.meta_data.get("figure_style")) is None:
-            style = "science"
-        plt.style.use(style)
+        if ax is None:
+            if (size := self.meta_data.get("figure_size")) is None:
+                size = (6, 4.7)
+            if (dpi := self.meta_data.get("figure_dpi")) is None:
+                dpi = 120
+            plt.figure(num=figure_id, figsize=size, dpi=dpi)
 
         x, y = self.column_names["x"], self.column_names["y"]
         sx, sy = self.column_names.get("x error"), self.column_names["y error"]
@@ -107,14 +83,20 @@ class Fit:
         if (more_style := self.meta_data.get("plotting_style")) is not None:
             plotting_style.update(more_style)
 
-        ax.set_xlim(self.__get_xlim(self.meta_data))
-        ax.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style)
+        if ax is None:
+            plt.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style)
+            plt.xlim(self.__get_xlim(self.meta_data))
+            plt.ylim(self.__get_ylim(self.meta_data, plt.ylim()))
+        else:
+            ax.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style)
+            ax.set_xlim(self.__get_xlim(self.meta_data))
+            ax.set_ylim(self.__get_ylim(self.meta_data, ax.get_ylim()))
 
         if self.result is not None:
             for fit_name in self.result.keys():
-                self.__plot_fit_ax(ax, fit_name, self.result[fit_name])
+                self.__plot_fit(fit_name, self.result[fit_name], ax)
 
-    def __plot_fit(self, name: str, fit_res: FitResult) -> None:
+    def __plot_fit(self, name: str, fit_res: FitResult, ax: Optional[Axes] = None) -> None:
         meta: dict = self.meta_data["fits"][name]
         if (points := meta.get("fit_points")) is None:
             points = 150
@@ -127,25 +109,18 @@ class Fit:
         if (more_style := meta.get("plotting_style")) is not None:
             plotting_style.update(more_style)
 
-        x = np.linspace(*self.__get_xlim(meta), points)
-        plt.plot(x, fit_res.eval(x), **plotting_style)
+        limits: List[float] = list(self.__get_xlim(meta))
+        if (val := meta.get("plot_x_min_limit")) is not None:
+            limits[0] = val
+        if (val := meta.get("plot_x_max_limit")) is not None:
+            limits[1] = val
+        x = np.linspace(*limits, points)
+        if ax is None:
+            plt.plot(x, fit_res.eval(x), **plotting_style)
+        else:
+            ax.plot(x, fit_res.eval(x), **plotting_style)
 
-
-    def __plot_fit_ax(self, ax, name: str, fit_res: FitResult) -> None:
-        meta: dict = self.meta_data["fits"][name]
-        if (points := meta.get("fit_points")) is None:
-            points = 150
-
-        plotting_style = {
-            "linestyle": "--",
-            "zorder": 0,
-        }
-
-        if (more_style := meta.get("plotting_style")) is not None:
-            plotting_style.update(more_style)
-
-        x = np.linspace(*self.__get_xlim(meta), points)
-        ax.plot(x, fit_res.eval(x), **plotting_style)
+    # ----------------------------------------------------------------------------------------
 
     def __get_xlim(self, meta: dict) -> Tuple[float, float]:
         x = self.column_names["x"]
@@ -155,6 +130,15 @@ class Fit:
             x_max = self.data[x].max()
 
         return x_min, x_max
+
+    def __get_ylim(self, meta: dict, ylim: Tuple[float, float]) -> Tuple[float, float]:
+        ylim = list(ylim)
+        if (y_min := meta.get("y_min_limit")) is not None:
+            ylim[0] = y_min
+        if (y_max := meta.get("y_max_limit")) is not None:
+            ylim[1] = y_max
+
+        return tuple(ylim)
 
     def run(self) -> dict[str, FitResult]:
         if (val := self.meta_data.get("fits")) is None:

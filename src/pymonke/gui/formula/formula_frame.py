@@ -1,17 +1,17 @@
-from customtkinter import *
+from customtkinter import CTkFrame, CTkEntry, CTkLabel
 
+import sys
 from tkinter import StringVar
-from typing import Optional
+from typing import Optional, Callable
 
 from pymonke.fit.parse import parse_function, replace_funcs
 from pymonke.fit.fit import func_type
 from pymonke.gui import EntryError
-from ..misc import get_meta
 from .parameters_scrollable_frame import ParametersScrollableFrame
 
 
 class FormulaFrame(CTkFrame):
-    def __init__(self, **args):
+    def __init__(self, **args) -> None:
         super().__init__(**args)
         self.text = StringVar(master=self, value="", name="FormulaFrameText")
         self.function: Optional[func_type] = None
@@ -26,7 +26,7 @@ class FormulaFrame(CTkFrame):
         self.entry.grid(row=0, column=0, sticky="ew", padx=10)
 
         self.entry.bind(sequence="<Return>", command=self.update_parameters)
-        self.entry_bindings = []
+        self.entry_bindings: list[Callable[[], None]] = []
 
         self.error_label = CTkLabel(master=self, text="")
         self.error_label.configure(text_color="red")
@@ -60,26 +60,23 @@ class FormulaFrame(CTkFrame):
             raise EntryError
 
     def update_parameters(self, _, text: Optional[str] = None) -> None:
-        ic()
-        ic(self.text.get(), text)
         if text is None:
             text = self.text.get()
         if text == "":
             self.parameters.delete_parameter_frames()
-            return
-        try:
-            self.update_formula(text)
-            _, params = self.get_func_and_params()
-            self.parameters.generate_parameter_frames(params)
-            self.reset_error_label()
-        except EntryError:
-            self.set_error_label("Invalid Entry")
+        else:
+            try:
+                self.update_formula(text)
+                _, params = self.get_func_and_params()
+                self.parameters.generate_parameter_frames(params)
+                self.reset_error_label()
+            except EntryError:
+                self.set_error_label("Invalid Entry")
 
         for binding in self.entry_bindings:
             binding()
 
-
-    def rename(self):
+    def rename(self) -> None:
         formula: str = self.text.get()
         try:
             new = self.parameters.rename_entries(formula)

@@ -37,6 +37,6 @@ class PlotCanvas(CTkFrame):
     def plot_data(self) -> None:
         fit = get_root(self).do_fit()
         self.ax.clear()
-        fit.plot_ax(self.ax)
+        fit.plot(ax=self.ax)
         self.canvas.draw()
 

@@ -38,13 +38,13 @@ class PlotFrame(CTkFrame):
 
     def min_callback(self, _):
         self.limits_frame.min_callback(_)
-        val = self.limits_frame.min.get()
+        val = self.limits_frame.min_var.get()
         self.canvas.set_limits(float(val), None)
         self.load_limits_to_meta()
 
     def max_callback(self, _):
         self.limits_frame.max_callback(_)
-        val = self.limits_frame.max.get()
+        val = self.limits_frame.max_var.get()
         self.canvas.set_limits(None, float(val))
         self.load_limits_to_meta()
 
@@ -52,7 +52,7 @@ class PlotFrame(CTkFrame):
         try:
             self.canvas.plot_data()
             _min, _max = self.canvas.ax.get_xlim()
-            self.limits_frame.set_bounds(_min, _max)
+            self.limits_frame.set_limits(_min, _max)
             self.info_label.show_info("Plotting the data and/or fitting successful.")
         except Exception as e:
             self.info_label.show_error(e.__repr__())
@@ -81,8 +81,8 @@ class PlotFrame(CTkFrame):
         self.plotting_arguments.meta = get_meta(self)["plotting_style"]
 
     def load_limits_to_meta(self, _=None):
-        _min = float(self.limits_frame.min.get())
-        _max = float(self.limits_frame.max.get())
+        _min = float(self.limits_frame.min_var.get())
+        _max = float(self.limits_frame.max_var.get())
         get_meta(self)["x_min_limit"] = _min
         get_meta(self)["x_max_limit"] = _max
 
