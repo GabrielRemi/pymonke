@@ -67,11 +67,9 @@ class App(Root, ctk.CTk):
         if (val := self.data_init.load_meta()) is not None:
             self.meta = val
         self.load_from_meta()
-        ic(self.meta)
 
     def load_data(self):
         self.data = self.data_init.load_data()
-        ic(self.data)
 
     def load_from_meta(self) -> None:
         # self.read_data_arguments_frame.load_parameters(self.meta)
@@ -79,7 +77,6 @@ class App(Root, ctk.CTk):
         self.plot_frame.load_from_meta()
         self.fit_frame.load_from_meta()
         # self.load_plotting_style_arguments_from_fit_meta()
-        ic(self.data)
 
     def get_plot_frame(self) -> Any:
         return self.plot_frame

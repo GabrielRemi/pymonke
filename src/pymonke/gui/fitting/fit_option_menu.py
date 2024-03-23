@@ -30,9 +30,6 @@ class FitComboBox(CTkComboBox):
             self.configure(values=old)
             self.set(fit_name)
             fits[fit_name] = dict()
-            formula_frame = get_root(self).get_fit_frame().formula_frame
-            formula_frame.update_formula("")
-            formula_frame.update_parameters(None, "")
             self.selected = fit_name
         else:  # Rename or delete
             if fit_name == "":
@@ -50,19 +47,6 @@ class FitComboBox(CTkComboBox):
         # self.change_meta_of_plotting_arguments()
         for binding in self.return_bindings:
             binding()
-
-    def change_meta_of_plotting_arguments(self):
-        # change meta for plotting arguments
-        ic(self.selected)
-        meta = get_meta(self)["fits"].get(self.selected)
-        if meta is not None:
-            val = meta.get("plotting_style")
-            if val is None:
-                meta["plotting_style"] = dict()
-            meta = meta["plotting_style"]
-        get_root(self).get_fit_frame().plotting_style_arguments.meta = meta
-        ic(meta)
-        ic(get_meta(self))
 
     def on_selection(self, event=None):
         self.selected = self.get()

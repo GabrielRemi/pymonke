@@ -13,19 +13,20 @@ from .parameters_scrollable_frame import ParametersScrollableFrame
 class FormulaFrame(CTkFrame):
     def __init__(self, **args) -> None:
         super().__init__(**args)
-        self.text = StringVar(master=self, value="", name="FormulaFrameText")
+        self.__text = StringVar(master=self, value="", name="FormulaFrameText")
         self.function: Optional[func_type] = None
+        self.params: list[str] = []
 
         self.configure(height=5000, width=1000)
         self.grid_rowconfigure((0, 2), weight=1)
         self.grid_rowconfigure(1, weight=20)
         self.grid_columnconfigure(0, weight=1)
 
-        self.entry = CTkEntry(master=self, placeholder_text="Enter your formula", textvariable=self.text,
+        self.entry = CTkEntry(master=self, placeholder_text="Enter your formula", textvariable=self.__text,
                               width=self.master["width"])
         self.entry.grid(row=0, column=0, sticky="ew", padx=10)
 
-        self.entry.bind(sequence="<Return>", command=self.update_parameters)
+        self.entry.bind(sequence="<Return>", command=self.entry_callback)
         self.entry_bindings: list[Callable[[], None]] = []
 
         self.error_label = CTkLabel(master=self, text="")
@@ -35,52 +36,36 @@ class FormulaFrame(CTkFrame):
         self.parameters = ParametersScrollableFrame(master=self, width=200)
         self.parameters.grid(row=1, column=0, sticky="ns")
 
-        # self.entry.bind(sequence="<Leave>", command=self.update_parameters)
+    @property
+    def text(self) -> str:
+        return self.__text.get()
 
-    def update_formula(self, text: Optional[str] = None) -> None:
-        """Looks for known functions in the formula string and updates it accordingly. Can fail if invalid Entry"""
+    @text.setter
+    def text(self, _formula: str) -> None:
         try:
-            if text is None:
-                text = self.entry.get()
-            if text == "":
-                self.text.set("")
-                return
-            self.text.set(replace_funcs(text))
-            self.function, params = parse_function(self.entry.get())
-        except:
-            raise EntryError
-
-    def get_func_and_params(self) -> tuple[func_type, list[str]]:
-        """Tries to parse the function string into a python function and returns it together with its parameters."""
-        try:
-            self.function, params = parse_function(self.entry.get())
+            self.__text.set(replace_funcs(_formula))
+            if _formula == "":
+                self.function, self.params = None, []
+            else:
+                self.function, self.params = parse_function(self.text)
             self.reset_error_label()
-            return self.function, params
-        except:
-            raise EntryError
+        except SyntaxError:
+            self.set_error_label("Invalid Entry")
+            return
 
-    def update_parameters(self, _, text: Optional[str] = None) -> None:
-        if text is None:
-            text = self.text.get()
-        if text == "":
-            self.parameters.delete_parameter_frames()
-        else:
-            try:
-                self.update_formula(text)
-                _, params = self.get_func_and_params()
-                self.parameters.generate_parameter_frames(params)
-                self.reset_error_label()
-            except EntryError:
-                self.set_error_label("Invalid Entry")
+        self.parameters.generate_parameter_frames(self.params)
 
+    def entry_callback(self, _event=None) -> None:
+        self.text = self.text
         for binding in self.entry_bindings:
             binding()
 
     def rename(self) -> None:
-        formula: str = self.text.get()
+        formula: str = self.__text.get()
         try:
             new = self.parameters.rename_entries(formula)
-            self.text.set(new)
+            self.__text.set(new)
+            self.entry_callback()
             self.reset_error_label()
         except EntryError as e:
             self.set_error_label(str(e))

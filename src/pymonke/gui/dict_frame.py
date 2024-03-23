@@ -1,5 +1,5 @@
-from customtkinter import *
-from typing import Optional, Any
+from customtkinter import CTkFrame, CTkEntry, CTkButton, CTkLabel, StringVar
+from typing import Optional, Any, Callable
 
 from .misc import get_root
 
@@ -8,10 +8,11 @@ class EntryPairFrame(CTkFrame):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.key_var = StringVar()
-        self.value_var = StringVar()
         self.key = CTkEntry(master=self, textvariable=self.key_var)
-        self.value = CTkEntry(master=self, textvariable=self.value_var)
         self.key.grid(row=0, column=0)
+
+        self.value_var = StringVar()
+        self.value = CTkEntry(master=self, textvariable=self.value_var)
         self.value.grid(row=0, column=1)
 
         self.delete_button = CTkButton(master=self, text="-", width=30, command=self.destroy)
@@ -19,7 +20,7 @@ class EntryPairFrame(CTkFrame):
 
 
 class DictFrame(CTkFrame):
-    def __init__(self, text: str, meta: Optional[dict[str, Any]] = None, **kwargs):
+    def __init__(self, text: str, meta: Optional[dict[str, Any]] = None, **kwargs) -> None:
         super().__init__(**kwargs)
         self.meta = meta
         self.label = CTkLabel(self, text=text)
@@ -30,8 +31,8 @@ class DictFrame(CTkFrame):
 
         self.entries: list[EntryPairFrame] = []
 
-        self.return_bindings = []
-        self.ignore_keys = []
+        self.return_bindings: list[Callable[[], None]] = []
+        self.ignore_keys: list[str] = []
 
     def add_parameter(self, key: str = "", value: str = ""):
         n = len(self.entries)
@@ -52,7 +53,6 @@ class DictFrame(CTkFrame):
             val = data[key]
             if key not in self.ignore_keys:
                 self.add_parameter(key, val)
-        ic(self.meta)
 
     def delete_entry(self, index) -> None:
         entry = self.entries.pop(index)
@@ -71,9 +71,6 @@ class DictFrame(CTkFrame):
         """delete the Button and also remove the entry from meta if given"""
         key = button.key_var.get()
         index = button.grid_info()["row"] - 1
-        ic(key)
-        ic(self.meta)
-        ic(get_root(self).meta)
         if self.meta is not None:
             self.meta.pop(key)
         self.delete_entry(index)
@@ -99,8 +96,6 @@ class DictFrame(CTkFrame):
         while self.meta != dict():
             self.meta.popitem()
         self.meta.update(args)
-        ic(self.meta)
-        ic(get_root(self).meta)
 
     def parse(self, value: str):
         try:

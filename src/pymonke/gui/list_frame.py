@@ -1,8 +1,10 @@
-from customtkinter import *
+from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkEntry, StringVar
+
+from typing import Callable
 
 
 class ListFrame(CTkFrame):
-    def __init__(self, text: str, has_add_button: bool = True, **kwargs):
+    def __init__(self, text: str, has_add_button: bool = True, **kwargs) -> None:
         super().__init__(**kwargs)
         self.label = CTkLabel(self, text=text)
         self.label.grid(row=0, column=0)
@@ -14,9 +16,9 @@ class ListFrame(CTkFrame):
 
         self.entries: list[Entry] = []
 
-        self.text_list = []
+        self.text_list: list[str] = []
 
-        self.entry_bindings = []  # List of function that should be added to the return binding of the entries
+        self.entry_bindings: list[Callable[[], None]] = []
 
     def add_parameter(self, val: str = ""):
         n = len(self.entries)
@@ -40,7 +42,6 @@ class ListFrame(CTkFrame):
         self.entries = []
 
     def _update_list(self, _=None):
-        ic(self.get_list())
         self.text_list = self.get_list()
 
     def get_list(self):
