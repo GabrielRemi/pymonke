@@ -2,6 +2,7 @@ from customtkinter import CTkFrame, CTkOptionMenu
 
 from typing import Any, Optional
 
+from .add_args_frame import AddArgsFrame
 from ..formula.formula_frame import FormulaFrame
 from .fit_option_menu import FitComboBox
 from ..list_frame import ListFrame
@@ -35,18 +36,21 @@ class FitFrame(CTkFrame):
 
         self.start_parameter_frame = ListFrame(text="Start Parameters", has_add_button=False, master=self)
         self.start_parameter_frame.entry_bindings = [self.update_start_parameters]
-        self.start_parameter_frame.grid(row=2, column=0, columnspan=2, pady=20)
+        self.start_parameter_frame.grid(row=2, column=0, columnspan=1, pady=0)
 
         self.limits_frame = LimitsFrame(master=self, label="Fitting Limits")
         self.limits_frame.entry_bindings = [self.update_to_meta]
-        self.limits_frame.grid(row=3, column=0, columnspan=2)
+        self.limits_frame.grid(row=3, column=0, columnspan=1)
 
         self.plot_limits_frame = LimitsFrame(master=self, label="Plotting Limits")
         self.plot_limits_frame.entry_bindings = [self.update_to_meta]
-        self.plot_limits_frame.grid(row=4, column=0, columnspan=2)
+        self.plot_limits_frame.grid(row=4, column=0, columnspan=1)
 
         self.plotting_style_arguments = DictFrame(master=self, text="Plotting Style Arguments")
-        self.plotting_style_arguments.grid(row=5, column=0, pady=20, columnspan=2)
+        self.plotting_style_arguments.grid(row=5, column=0, pady=20, columnspan=1)
+
+        self.add_args_frame = AddArgsFrame(master=self)
+        self.add_args_frame.grid(row=2, column=1, sticky="nsew", padx=20, rowspan=4, pady=50)
 
     def update_start_parameter_entries_from_formula_frame(self) -> None:
         params: list[str] = self.formula_frame.params
@@ -128,6 +132,7 @@ class FitFrame(CTkFrame):
             self.fit_meta["plotting_style"] = dict()
             meta = self.fit_meta["plotting_style"]
         self.plotting_style_arguments.meta = meta
+        self.add_args_frame.meta = self.fit_meta
 
     def get_start_parameters(self) -> list[float]:
         p0: list[float] = []
@@ -189,6 +194,7 @@ class FitFrame(CTkFrame):
         self.load_limits_from_fit_meta()
         self.load_plotting_style_arguments_from_fit_meta()
         self.update_start_parameter_entries_from_formula_frame()
+        self.add_args_frame.load_from_meta()
 
     def update_from_to_meta(self, _: Any = None) -> None:
         self.load_from_fit_meta()
