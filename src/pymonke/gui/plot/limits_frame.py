@@ -1,14 +1,16 @@
 from customtkinter import CTkFrame, StringVar, CTkEntry, CTkLabel
 
 from typing import Callable, Any, Optional
+from ..misc import get_meta
 
 
 class LimitsFrame(CTkFrame):
-    def __init__(self, label: str = "", **kwargs: Any) -> None:
+    def __init__(self, label: str = "", meta: Optional[dict[str, Any]] = None, max_lim_key: Optional[str] = None,
+                 min_lim_key: Optional[str] = None, **kwargs: Any) -> None:
         CTkFrame.__init__(self, **kwargs)
         if label != "":
             self.label = CTkLabel(master=self, text=label)
-            self.label.grid(row=0, column=0)
+            self.label.grid(row=0, column=0, columnspan=2)
 
         self.min_var = StringVar(value="")
         self.max_var = StringVar(value="")
@@ -18,10 +20,15 @@ class LimitsFrame(CTkFrame):
 
         self.entry_bindings: list[Callable[[], None]] = []
 
+        # Define a dictionary where to store the limits on change with the corresponding keys
+        self.meta: Optional[dict[str, Any]] = meta
+        self.max_lim_key: Optional[str] = max_lim_key
+        self.min_lim_key: Optional[str] = min_lim_key
+
         self.min_entry = CTkEntry(self, textvariable=self.min_var)
-        self.min_entry.bind("<Return>", command=self.min_callback)
+        self.min_entry.bind("<Return>", command=self.callback)
         self.max_entry = CTkEntry(self, textvariable=self.max_var)
-        self.max_entry.bind("<Return>", command=self.max_callback)
+        self.max_entry.bind("<Return>", command=self.callback)
 
         self.min_entry.grid(row=1, column=0)
         self.max_entry.grid(row=1, column=1)
@@ -83,18 +90,17 @@ class LimitsFrame(CTkFrame):
                 return
         self.max = value
 
-    def min_callback(self, _: Any) -> None:
-        try:
-            self.set_min(self.get_min_var())
-            for binding in self.entry_bindings:
-                binding()
-        except ValueError:
-            self.min = self.min
+    def callback(self, _event: Any = None) -> None:
+        ic()
+        self.set_max(self.get_max_var())
+        self.set_min(self.get_min_var())
+        if self.meta is not None:
+            assert isinstance(self.min_lim_key, str) and isinstance(self.max_lim_key, str)
+            ret = {
+                self.min_lim_key: self.min,
+                self.max_lim_key: self.max,
+            }
 
-    def max_callback(self, _: Any) -> None:
-        try:
-            self.set_max(self.get_max_var())
-            for binding in self.entry_bindings:
-                binding()
-        except ValueError:
-            self.max = self.max
+            self.meta.update(ret)
+        for binding in self.entry_bindings:
+            binding()

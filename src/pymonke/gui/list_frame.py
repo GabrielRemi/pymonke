@@ -20,9 +20,9 @@ class ListFrame(CTkFrame):
 
         self.entry_bindings: list[Callable[[], None]] = []
 
-    def add_parameter(self, val: str = "") -> None:
+    def add_parameter(self, val: Any = "") -> None:
         n = len(self.entries)
-        entry = Entry(master=self, text=val)
+        entry = Entry(master=self, text=str(val))
         entry.grid(row=n+1, column=0)
         entry.bind("<Return>", self._update_list)
         for func in self.entry_bindings:
@@ -31,7 +31,7 @@ class ListFrame(CTkFrame):
         if self.has_add_button:
             self.add_button.grid(row=n+2, column=0)
 
-    def set_parameters(self, parameters: list[str]) -> Any:
+    def set_parameters(self, parameters: list[Any]) -> Any:
         self.delete_all()
         for param in parameters:
             self.add_parameter(param)

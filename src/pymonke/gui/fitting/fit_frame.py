@@ -27,11 +27,11 @@ class FitFrame(CTkFrame):
                                                  self.update_start_parameter_entries_from_formula_frame]
         self.fit_combo_box.return_bindings = [self.set_fit_meta, self.load_from_fit_meta,
                                               self.update_start_parameter_entries_from_formula_frame]
-        self.fit_combo_box.grid(row=1, column=0)
+        self.fit_combo_box.grid(row=1, column=0, sticky="w")
 
         self.fit_type_option = CTkOptionMenu(master=self, values=["OLS", "ODR"], command=self.update_to_meta)
         self.fit_type_option.set("OLS")
-        self.fit_type_option.grid(row=1, column=1)
+        self.fit_type_option.grid(row=1, column=1, sticky="e")
 
         self.start_parameter_frame = ListFrame(text="Start Parameters", has_add_button=False, master=self)
         self.start_parameter_frame.entry_bindings = [self.update_start_parameters]
@@ -46,7 +46,6 @@ class FitFrame(CTkFrame):
         self.plot_limits_frame.grid(row=4, column=0, columnspan=2)
 
         self.plotting_style_arguments = DictFrame(master=self, text="Plotting Style Arguments")
-        # self.plotting_style_arguments.return_bindings = [self.update_plotting_style]
         self.plotting_style_arguments.grid(row=5, column=0, pady=20, columnspan=2)
 
     def update_start_parameter_entries_from_formula_frame(self) -> None:

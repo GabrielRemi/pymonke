@@ -57,7 +57,9 @@ class App(Root, ctk.CTk):
 
     def load_meta(self) -> None:
         if (val := self.data_init.load_meta()) is not None:
-            self.meta = val
+            while self.meta != dict():
+                self.meta.popitem()
+            self.meta.update(val)
         self.load_from_meta()
 
     def load_data(self) -> None:

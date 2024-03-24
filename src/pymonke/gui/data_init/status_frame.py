@@ -1,9 +1,11 @@
 from customtkinter import CTkFrame, CTkButton, CTkLabel
 from collections import deque
 
+from typing import Any
+
 
 class StatusFrame(CTkFrame):
-    def __init__(self, max_length: int = 10, **kwargs) -> None:
+    def __init__(self, max_length: int = 10, **kwargs: Any) -> None:
         CTkFrame.__init__(self, **kwargs)
         self.max_length = max_length
         self.labels: deque[CTkLabel] = deque()
