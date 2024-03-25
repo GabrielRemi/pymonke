@@ -83,7 +83,7 @@ class App(Root, ctk.CTk):
         return None
 
     def do_fit(self) -> Fit:
-        fit: Fit = Fit(meta_data=self.meta, data=self.data)
+        fit: Fit = Fit(meta=self.meta, data=self.data)
         self.fit_result = fit.run()
         return fit
 

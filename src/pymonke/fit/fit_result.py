@@ -6,7 +6,7 @@ from pandas import DataFrame
 from dataclasses import dataclass, field
 from typing import List, Dict, Callable, TypeAlias, Iterable
 
-from ..mmath import NumWithError
+from ..mmath.num_with_error import NumWithError
 
 scalar: TypeAlias = int | float
 array: TypeAlias = np.ndarray | pd.Series
@@ -29,7 +29,7 @@ class FitResult:
         else:
             return float(result)
 
-    def as_dict(self, chi_square=False) -> dict[str, NumWithError]:
+    def as_dict(self, chi_square=False) -> dict[str, NumWithError | float]:
         result: dict = dict()
         for name, x, sigma in zip(self.parameter_names, self.parameter_values, self.parameter_sigmas):
             result[name] = NumWithError(x, sigma)

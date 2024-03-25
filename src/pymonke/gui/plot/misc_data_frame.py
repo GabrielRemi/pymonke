@@ -29,6 +29,10 @@ class MiscDataFrame(CTkFrame):
         self.dpi_entry.entry.bind("<Return>", self.callback)
         self.dpi_entry.grid(row=2, column=0, pady=5)
 
+        self.label_entry = LabeledEntry(master=self, label="Label")
+        self.label_entry.entry.bind("<Return>", self.callback)
+        self.label_entry.grid(row=3, column=0, pady=5)
+
         self.meta = meta
 
     def callback(self, _: Any = None) -> None:
@@ -36,11 +40,13 @@ class MiscDataFrame(CTkFrame):
         figure_style: Optional[list[str]] = self.set_figure_style(self.figure_style_entry.text_var.get())
         figure_size: Optional[tuple[float, float]] = self.set_figure_size(self.figure_size_entry.text_var.get())
         dpi: Optional[float] = self.set_dpi(self.dpi_entry.text_var.get())
+        label: str = self.get_label()
 
         data = {
             "figure_style": figure_style,
             "figure_size": figure_size,
             "figure_dpi": dpi,
+            "label": label
         }
 
         if self.meta is not None:
@@ -49,9 +55,10 @@ class MiscDataFrame(CTkFrame):
     def load_from_meta(self) -> None:
         if self.meta is None:
             return
-        self.set_figure_style((self.meta.get("figure_style", "")))
-        self.set_figure_size(self.meta.get("figure_size", ""))
-        self.set_dpi(self.meta.get("figure_dpi", ""))
+        self.set_figure_style((self.meta.get("figure_style") or ""))
+        self.set_figure_size(self.meta.get("figure_size") or "")
+        self.set_dpi(self.meta.get("figure_dpi") or "")
+        self.set_label(self.meta.get("label") or "")
 
     def get_figure_style(self) -> list[str]:
         text = self.figure_style_entry.text
@@ -115,4 +122,12 @@ class MiscDataFrame(CTkFrame):
         except ValueError:
             entry.text_var.set(entry.text)
             return self.get_dpi()
+
+    def set_label(self, text: str) -> str:
+        self.label_entry.text = text
+        self.label_entry.text_var.set(text)
+        return text
+
+    def get_label(self) -> str:
+        return self.set_label(self.label_entry.text_var.get())
 

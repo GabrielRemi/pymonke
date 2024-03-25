@@ -4,6 +4,7 @@ from typing import Optional, Any, Callable
 
 from .misc import get_root
 
+
 class EntryPairFrame(CTkFrame):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

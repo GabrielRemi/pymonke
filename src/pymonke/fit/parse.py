@@ -4,11 +4,13 @@ import numpy as np
 from pandas import Series
 
 from typing import Callable, List, Tuple, TypeAlias, Iterable, Dict
+from .fit_result import FitResult
 
 scalar: TypeAlias = float | int
 array: TypeAlias = Series | np.ndarray
 numerical: TypeAlias = scalar | array
 func_type: TypeAlias = Callable[[VarArg(str)], str]
+
 
 class RepetitionError(Exception):
     def __init__(self):
@@ -158,10 +160,49 @@ def parse_function(_formula: str) -> Tuple[Callable[[numerical, VarArg(float | i
         return eval(string)
 
     try:
-        function(0, *([0]*len(params)))
+        function(0, *([0] * len(params)))
     except SyntaxError as e:
         raise SyntaxError(e)
     except ArithmeticError:
         pass
 
     return function, params
+
+
+def parse_variable_str(label_str: str, result: FitResult) -> str:
+    """Reads a string that has variable names marked with '#' and replaces them with their values
+    from the FitResult object."""
+    res_dict = result.as_dict(chi_square=True)
+    tokens = label_str.split()
+    for index, tok in enumerate(tokens):
+        if tok[0] != "#":
+            continue
+        tok = tok[1:]
+        key_error = f"Parameter {tok} not found. Please check if your parameters are correct."
+        value_error = f"Cannot access attribute of parameter {tok}. Only #paramter.val or #paramter.err are "
+        f"allowed as inputs"
+        if "." not in tok:
+            if tok == "chi":
+                tokens[index] = str(round(res_dict["reduced_chi_squared"], 2))
+            else:
+                try:
+                    tokens[index] = str(res_dict[tok])
+                except KeyError:
+                    raise KeyError(key_error)
+        else:
+            try:
+                param, attr = tok.split(".")
+            except:
+                raise ValueError(value_error)
+            try:
+                if attr == "val":
+                    tokens[index] = str(res_dict[param].x)
+                elif attr == "err":
+                    tokens[index] = str(res_dict[param].x_error)
+                else:
+                    raise ValueError(value_error)
+            except KeyError:
+                raise KeyError(key_error)
+
+
+    return " ".join(tokens)

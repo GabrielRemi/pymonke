@@ -9,6 +9,8 @@ class LabeledEntry(CTkFrame):
         self.text_var = StringVar(value="")
         self.text = ""
 
+        self.grid_columnconfigure(0, weight=1)
+
         self.label = CTkLabel(self, text=label)
         self.label.grid(row=0, column=0)
 

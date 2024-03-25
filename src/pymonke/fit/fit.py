@@ -12,7 +12,7 @@ from scipy import odr
 from scipy.optimize import curve_fit
 
 from .fit_result import FitResult
-from .parse import parse_function, replace_funcs, numerical, scalar, array
+from .parse import parse_function, replace_funcs, numerical, scalar, array, parse_variable_str
 from ..misc.dataframe import get_error_column_name
 from ..misc.file_management import read_data_into_dataframe
 
@@ -20,11 +20,11 @@ func_type: TypeAlias = Callable[[numerical, VarArg(scalar)], numerical]
 
 
 class Fit:
-    def __init__(self, meta_data: dict, data: DataFrame | None = None):
-        self.meta_data = meta_data
+    def __init__(self, meta: dict, data: DataFrame | None = None):
+        self.meta = meta
         if data is None:
-            self.file: str = meta_data["file"]
-            if (args := meta_data.get("read_data_args")) is not None:
+            self.file: str = meta["file"]
+            if (args := meta.get("read_data_args")) is not None:
                 self.data: DataFrame = read_data_into_dataframe(self.file, **args)
             else:
                 self.data = read_data_into_dataframe(self.file)
@@ -33,14 +33,14 @@ class Fit:
 
         self.result: Optional[dict[str, FitResult]] = None
 
-        self.column_names = self.__get_column_names(meta_data.get("error_marker"))
+        self.column_names = self.__get_column_names(meta.get("error_marker"))
 
     def __get_column_names(self, error_marker: List[str] | None = None) -> Dict[str, str]:
         if error_marker is None:
             error_marker = ["err", "error", "fehler", "Err", "Error", "Fehler"]
         names: Dict[str, str] = dict()
-        names["x"] = self.meta_data["x"]
-        names["y"] = self.meta_data["y"]
+        names["x"] = self.meta["x"]
+        names["y"] = self.meta["y"]
         x_error = get_error_column_name(self.data, names["x"], error_marker)
         y_error = get_error_column_name(self.data, names["y"], error_marker)
         if y_error is None:
@@ -55,13 +55,13 @@ class Fit:
     # -------------------------------Plot with Matplotlib---------------------------------
     # ------------------------------------------------------------------------------------
     def plot(self, figure_id: Optional[int | str | Figure | SubFigure] = None, ax: Optional[Axes] = None):
-        if (style := self.meta_data.get("figure_style")) is None:
+        if (style := self.meta.get("figure_style")) is None:
             style = "science"
         plt.style.use(style)
         if ax is None:
-            if (size := self.meta_data.get("figure_size")) is None:
+            if (size := self.meta.get("figure_size")) is None:
                 size = (6, 4.7)
-            if (dpi := self.meta_data.get("figure_dpi")) is None:
+            if (dpi := self.meta.get("figure_dpi")) is None:
                 dpi = 120
             plt.figure(num=figure_id, figsize=size, dpi=dpi)
 
@@ -74,36 +74,45 @@ class Fit:
 
         plotting_style = {
             "linestyle": "",
-            "ms": 3,
+            "ms": 4,
             "marker": "o",
-            "capsize": 2.5,
-            "zorder": 100
+            "capsize": 3.5,
+            "zorder": 2
         }
 
-        if (more_style := self.meta_data.get("plotting_style")) is not None:
+        if (more_style := self.meta.get("plotting_style")) is not None:
             plotting_style.update(more_style)
 
         if ax is None:
-            plt.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style)
-            plt.xlim(self.__get_xlim(self.meta_data))
-            plt.ylim(self.__get_ylim(self.meta_data, plt.ylim()))
+            plt.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style,
+                         label=self.meta.get("label") or "Data Points")
+            plt.xlim(self.__get_xlim(self.meta))
+            plt.ylim(self.__get_ylim(self.meta, plt.ylim()))
+            plt.rc('axes', axisbelow=True)
         else:
-            ax.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style)
-            ax.set_xlim(self.__get_xlim(self.meta_data))
-            ax.set_ylim(self.__get_ylim(self.meta_data, ax.get_ylim()))
+            ax.errorbar(self.data[x], self.data[y], yerr=self.data[sy], xerr=sx, **plotting_style,
+                        label=self.meta.get("label") or "Data Points")
+            ax.set_xlim(self.__get_xlim(self.meta))
+            ax.set_ylim(self.__get_ylim(self.meta, ax.get_ylim()))
+            ax.set_axisbelow(True)
 
         if self.result is not None:
             for fit_name in self.result.keys():
                 self.__plot_fit(fit_name, self.result[fit_name], ax)
 
+        if ax is None:
+            plt.legend()
+        else:
+            ax.legend()
+
     def __plot_fit(self, name: str, fit_res: FitResult, ax: Optional[Axes] = None) -> None:
-        meta: dict = self.meta_data["fits"][name]
+        meta: dict = self.meta["fits"][name]
         if (points := meta.get("fit_points")) is None:
             points = 150
 
         plotting_style = {
             "linestyle": "--",
-            "zorder": 0,
+            "zorder": 1,
         }
 
         if (more_style := meta.get("plotting_style")) is not None:
@@ -115,10 +124,11 @@ class Fit:
         if (val := meta.get("plot_x_max_limit")) is not None:
             limits[1] = val
         x = np.linspace(*limits, points)
+        label = parse_variable_str(meta.get("label") or "$\\chi^2 = #chi $", fit_res)
         if ax is None:
-            plt.plot(x, fit_res.eval(x), **plotting_style)
+            plt.plot(x, fit_res.eval(x), **plotting_style, label=label)
         else:
-            ax.plot(x, fit_res.eval(x), **plotting_style)
+            ax.plot(x, fit_res.eval(x), **plotting_style, label=label)
 
     # ----------------------------------------------------------------------------------------
 
@@ -141,7 +151,7 @@ class Fit:
         return tuple(ylim)
 
     def run(self) -> dict[str, FitResult]:
-        if (val := self.meta_data.get("fits")) is None:
+        if (val := self.meta.get("fits")) is None:
             return dict()
         fits_meta: dict[str, dict] = val
         result: dict[str, FitResult] = dict()

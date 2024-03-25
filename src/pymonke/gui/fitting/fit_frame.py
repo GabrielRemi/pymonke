@@ -18,8 +18,10 @@ class FitFrame(CTkFrame):
         self.formula_frame.grid(row=0, column=0, sticky="nsew", columnspan=2)
         self.formula_frame.entry_bindings = [self.update_to_meta,
                                              self.update_start_parameter_entries_from_formula_frame]
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=3)
+        self.grid_rowconfigure(0, weight=5)
+        self.grid_rowconfigure((1, 2, 3, 4), weight=1)
+        self.grid_columnconfigure(1, weight=2)
 
         self.fit_meta: Optional[dict[str, Any]] = None
 
@@ -49,8 +51,8 @@ class FitFrame(CTkFrame):
         self.plotting_style_arguments = DictFrame(master=self, text="Plotting Style Arguments")
         self.plotting_style_arguments.grid(row=5, column=0, pady=20, columnspan=1)
 
-        self.add_args_frame = AddArgsFrame(master=self)
-        self.add_args_frame.grid(row=2, column=1, sticky="nsew", padx=20, rowspan=4, pady=50)
+        self.add_args_frame = AddArgsFrame(master=self, width=200)
+        self.add_args_frame.grid(row=2, column=1, sticky="nsew", padx=5, rowspan=3, pady=20)
 
     def update_start_parameter_entries_from_formula_frame(self) -> None:
         params: list[str] = self.formula_frame.params
