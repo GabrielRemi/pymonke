@@ -13,8 +13,6 @@ def dumps(obj: Any) -> str:
     assert isinstance(ret, str)
     return ret
 
-print(dumps([1, 2, 3]))
-
 
 class MiscDataFrame(CTkFrame):
     def __init__(self, meta: Optional[dict[str, Any]] = None, **kwargs: Any) -> None:

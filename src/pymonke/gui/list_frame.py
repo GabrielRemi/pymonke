@@ -1,6 +1,9 @@
 from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkEntry, StringVar
+from tkinter import Event
 
 from typing import Callable, Any
+
+from .misc import get_root
 
 
 class ListFrame(CTkFrame):
@@ -20,6 +23,22 @@ class ListFrame(CTkFrame):
 
         self.entry_bindings: list[Callable[[], None]] = []
 
+    def get_selected_index(self, event: "Event[Any]") -> int:
+        name = str(event.widget).removesuffix(".!entry")
+        widget = get_root(self).nametowidget(name)  # type: ignore
+        res: int = widget.grid_info()["row"] - 1
+        return res
+
+    def up(self, event: "Event[Any]") -> None:
+        index: int = self.get_selected_index(event) - 1
+        if index >= 0:
+            self.entries[index].focus_set()
+
+    def down(self, event: "Event[Any]") -> None:
+        index: int = self.get_selected_index(event) + 1
+        if index < len(self.entries):
+            self.entries[index].focus_set()
+
     def add_parameter(self, val: Any = "") -> None:
         n = len(self.entries)
         entry = Entry(master=self, text=str(val))
@@ -27,6 +46,8 @@ class ListFrame(CTkFrame):
         entry.bind("<Return>", self._update_list)
         for func in self.entry_bindings:
             entry.bind("<Return>", func)
+            entry.bind("<Up>", self.up)
+            entry.bind("<Down>", self.down)
         self.entries.append(entry)
         if self.has_add_button:
             self.add_button.grid(row=n+2, column=0)
