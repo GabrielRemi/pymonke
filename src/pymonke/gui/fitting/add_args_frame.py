@@ -2,7 +2,7 @@ from customtkinter import CTkFrame, CTkCheckBox
 
 from typing import Any, Optional
 
-from .labeled_entry import LabeledEntry
+from ..labeled_entry import LabeledEntry
 
 
 class AddArgsFrame(CTkFrame):
@@ -34,16 +34,19 @@ class AddArgsFrame(CTkFrame):
 
     def load_from_meta(self) -> None:
         if self.meta is not None:
-            self.fitting_points_entry.text_var.set(self.meta.get("fit_points", 200))
-            self.update_fitting_points_entry()
-            if self.meta.get("absolute_sigma", False):
-                self.absolute_sigma_checkbox.select()
-            else:
-                self.absolute_sigma_checkbox.deselect()
-            if self.meta.get("check_finite", False):
-                self.check_finite_checkbox.select()
-            else:
-                self.check_finite_checkbox.deselect()
+            self.load(self.meta)
+
+    def load(self, data: dict[str, Any]) -> None:
+        self.set_fitting_points_entry(data.get("fit_points", None))
+        self.update_fitting_points_entry()
+        if data.get("absolute_sigma", False):
+            self.absolute_sigma_checkbox.select()
+        else:
+            self.absolute_sigma_checkbox.deselect()
+        if data.get("check_finite", False):
+            self.check_finite_checkbox.select()
+        else:
+            self.check_finite_checkbox.deselect()
 
     def fitting_points_entry_callback(self, _: Any = None) -> None:
         self.update_fitting_points_entry()
@@ -55,6 +58,13 @@ class AddArgsFrame(CTkFrame):
             return None
         else:
             return int(text)
+
+    def set_fitting_points_entry(self, value: Optional[int]) -> None:
+        if value is None:
+            self.fitting_points_entry.text_var.set("")
+        else:
+            self.fitting_points_entry.text_var.set(str(value))
+        self.update_fitting_points_entry()
 
     def update_fitting_points_entry(self) -> None:
         text = self.fitting_points_entry.text_var.get()

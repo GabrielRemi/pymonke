@@ -12,6 +12,7 @@ class FitComboBox(CTkComboBox):
 
         self.selection_bindings: list[Callable[[], None]] = []
         self.return_bindings: list[Callable[[], None]] = []
+        self.delete_bindings: list[Callable[[], None]] = []
 
         self.selected: str = "Add Fit"
 
@@ -33,19 +34,28 @@ class FitComboBox(CTkComboBox):
             self.selected = fit_name
         else:  # Rename or delete
             if fit_name == "":
-                get_root(self).meta["fits"].pop(self.selected)
-                old.remove(self.selected)
-                self.set("Add Fit")
-                self.selected = "Add Fit"
+                self.delete_option(self.selected)
             else:
                 for i, name in enumerate(old):
                     if name == self.selected:
                         old[i] = fit_name
                 fits[fit_name] = fits.pop(self.selected)
                 self.selected = fit_name
-            self.configure(values=old)
+                self.configure(values=old)
         # self.change_meta_of_plotting_arguments()
         for binding in self.return_bindings:
+            binding()
+
+    def delete_option(self, option_to_delete: str) -> None:
+        options: list[str] = self.cget("values")
+        if option_to_delete not in options:
+            raise ValueError(f"Invalid option: {option_to_delete}. Cannot delete option because it does not exist.")
+        get_root(self).meta["fits"].pop(option_to_delete)
+        options.remove(option_to_delete)
+        self.set("Add Fit")
+        self.selected = "Add Fit"
+        self.configure(values=options)
+        for binding in self.delete_bindings:
             binding()
 
     def on_selection(self, _: Any = None) -> None:

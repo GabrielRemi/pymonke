@@ -7,6 +7,7 @@ from typing import Any, Optional
 from .browse_save_frame import BrowseSaveFrame
 from ..browse_frame import BrowseFrame
 from ..entry_label_frame import EntryLabelFrame
+from ..fitting.fit_frame import FitFrame
 from ..misc import get_root
 from ..misc import get_data, get_meta, get_root
 from .status_frame import StatusFrame
@@ -57,8 +58,9 @@ class DataInitFrame(CTkFrame):
 
     def load_meta(self) -> Optional[dict[str, Any]]:
         try:
+            fit_frame: FitFrame = get_root(self).get_fit_frame()
+            fit_frame.delete_all_fits()
             self.load_meta_frame.browse()
-            # TODO loading two json data files after another does not work, needs to delete all the previous fits first
             file_path = self.load_meta_frame.file_path.get()
             data: dict[str, Any] = json.loads(open(file_path).read())
             self.status.add_info("Meta Data loaded successfully")

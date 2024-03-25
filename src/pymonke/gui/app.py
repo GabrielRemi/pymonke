@@ -67,6 +67,7 @@ class App(Root, ctk.CTk):
 
     def load_from_meta(self) -> None:
         # self.read_data_arguments_frame.load_parameters(self.meta)
+        self.fit_frame.delete_all_fits()
         self.data_init.load_from_meta()
         self.plot_frame.load_from_meta()
         self.fit_frame.load_from_meta()

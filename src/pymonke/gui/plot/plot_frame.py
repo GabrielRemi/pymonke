@@ -7,6 +7,7 @@ from ..fitting.fit_frame import FitFrame
 from ..info_label import InfoLabel
 from .limits_frame import LimitsFrame
 from ..misc import get_meta, get_root
+from .misc_data_frame import MiscDataFrame
 from .plot_canvas import PlotCanvas
 
 
@@ -14,7 +15,7 @@ class PlotFrame(CTkFrame):
     def __init__(self, **kwargs: Any) -> None:
         CTkFrame.__init__(self, **kwargs)
         self.canvas = PlotCanvas(master=self)
-        self.canvas.grid(row=0, column=0, columnspan=2)
+        self.canvas.grid(row=0, column=0, columnspan=3)
 
         self.x_limits_frame = LimitsFrame(master=self, label="X Limits", meta=get_meta(self),
                                           max_lim_key="x_max_limit", min_lim_key="x_min_limit")
@@ -37,6 +38,10 @@ class PlotFrame(CTkFrame):
         self.plotting_arguments = DictFrame(master=self, text="Plotting arguments",
                                             meta=get_meta(self)["plotting_style"])
         self.plotting_arguments.grid(row=5, column=0, columnspan=2, pady=5)
+
+        self.misc_data_frame = MiscDataFrame(master=self)
+        self.misc_data_frame.meta = get_meta(self)
+        self.misc_data_frame.grid(row=1, column=2, rowspan=2)
 
     def plot_data(self) -> None:
         try:
@@ -64,6 +69,8 @@ class PlotFrame(CTkFrame):
         if get_meta(self).get("plotting_style") is None:
             get_meta(self)["plotting_style"] = dict()
         self.plotting_arguments.meta = get_meta(self)["plotting_style"]
+        self.plotting_arguments.load_from_meta()
+        self.misc_data_frame.load_from_meta()
 
     def load_limits_to_meta(self, _: Any = None) -> None:
         _min = float(self.x_limits_frame.min_var.get())

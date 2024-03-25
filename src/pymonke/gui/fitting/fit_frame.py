@@ -89,6 +89,11 @@ class FitFrame(CTkFrame):
         elif _type == "odr":
             self.fit_type_option.set("ODR")
 
+    def delete_all_fits(self) -> None:
+        for opt in self.fit_combo_box.cget("values"):
+            if opt != "Add Fit":
+                self.fit_combo_box.delete_option(opt)
+
     def update_to_meta(self, _: Any = None) -> None:
         """update meta from all child objects"""
         if self.fit_meta is None:
@@ -127,6 +132,8 @@ class FitFrame(CTkFrame):
         """Set self.fit_meta to the meta dictionary that corresponds to the fit set in the combo box."""
         self.fit_meta = self.get_fit_meta()
         if self.fit_meta is None:
+            self.plotting_style_arguments.meta = None
+            self.add_args_frame.meta = None
             return
         if (meta := self.fit_meta.get("plotting_style")) is None:
             self.fit_meta["plotting_style"] = dict()
@@ -183,6 +190,16 @@ class FitFrame(CTkFrame):
     def load_from_fit_meta(self, _: Any = None) -> None:
         """if Values exist in meta[fit_name]. load them in."""
         if (fit := self.get_fit_meta()) is None:
+            self.formula_frame.text = ""
+            self.plotting_style_arguments.load_parameters({})
+            self.limits_frame.set_limits(None, None)
+            self.plot_limits_frame.set_limits(None, None)
+            self.add_args_frame.load({
+                "fit_points": None,
+                "absolute_sigma": False,
+                "check_finite": False,
+            })
+            self.fit_type_option.set("OLS")
             return
         if (func := fit.get("function")) is None:
             func = ""

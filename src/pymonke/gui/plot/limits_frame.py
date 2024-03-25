@@ -91,7 +91,6 @@ class LimitsFrame(CTkFrame):
         self.max = value
 
     def callback(self, _event: Any = None) -> None:
-        ic()
         self.set_max(self.get_max_var())
         self.set_min(self.get_min_var())
         if self.meta is not None:

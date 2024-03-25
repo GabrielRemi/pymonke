@@ -95,6 +95,11 @@ class DictFrame(CTkFrame):
             self.meta.popitem()
         self.meta.update(args)
 
+    def load_from_meta(self) -> None:
+        if self.meta is None:
+            return
+        self.load_parameters(self.meta)
+
     def parse(self, value: str) -> float | str:
         try:
             return float(value)
