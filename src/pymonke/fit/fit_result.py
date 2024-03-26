@@ -29,7 +29,7 @@ class FitResult:
         else:
             return float(result)
 
-    def as_dict(self, chi_square=False) -> dict[str, NumWithError | float]:
+    def as_dict(self, chi_square: bool = False) -> dict[str, NumWithError | float]:
         result: dict = dict()
         for name, x, sigma in zip(self.parameter_names, self.parameter_values, self.parameter_sigmas):
             result[name] = NumWithError(x, sigma)

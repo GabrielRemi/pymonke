@@ -1,4 +1,5 @@
 from typing import List, Dict, Tuple, Callable, TypeAlias, Optional, Any
+import warnings
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
@@ -57,7 +58,13 @@ class Fit:
     def plot(self, figure_id: Optional[int | str | Figure | SubFigure] = None, ax: Optional[Axes] = None):
         if (style := self.meta.get("figure_style")) is None:
             style = "science"
-        plt.style.use(style)
+        try:
+            plt.style.use(style)
+        except Exception as e:
+            message = f"figure style {style} not found. Using default instead.\n{e}"
+            warnings.warn(message, RuntimeWarning)
+            plt.style.use("default")
+
         if ax is None:
             if (size := self.meta.get("figure_size")) is None:
                 size = (6, 4.7)
@@ -131,6 +138,13 @@ class Fit:
             ax.plot(x, fit_res.eval(x), **plotting_style, label=label)
 
     # ----------------------------------------------------------------------------------------
+
+    def get_results_as_dict(self) -> Dict[str, Any]:
+        result = dict()
+        for key, value in self.result.items():
+            result[key] = value.as_dict(True)
+
+        return result
 
     def __get_xlim(self, meta: dict) -> Tuple[float, float]:
         x = self.column_names["x"]

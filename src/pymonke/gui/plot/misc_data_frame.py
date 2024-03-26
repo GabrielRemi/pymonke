@@ -27,11 +27,11 @@ class MiscDataFrame(CTkFrame):
 
         self.dpi_entry = LabeledEntry(master=self, label="DPI")
         self.dpi_entry.entry.bind("<Return>", self.callback)
-        self.dpi_entry.grid(row=2, column=0, pady=5)
+        self.dpi_entry.grid(row=0, column=1, pady=5)
 
         self.label_entry = LabeledEntry(master=self, label="Label")
         self.label_entry.entry.bind("<Return>", self.callback)
-        self.label_entry.grid(row=3, column=0, pady=5)
+        self.label_entry.grid(row=1, column=1, pady=5)
 
         self.meta = meta
 

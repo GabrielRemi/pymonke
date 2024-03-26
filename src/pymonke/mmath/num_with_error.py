@@ -1,4 +1,7 @@
+from json import JSONEncoder
+import json
 from typing import Tuple
+from typing_extensions import Self
 
 from .rounding import roundup_two_significant_digits
 
@@ -22,21 +25,23 @@ def _round_values(x: float, x_error: float) -> Tuple[float, float, float]:
     return x, x_error, int(exponent)
 
 
-class NumWithError:
+class NumWithError(dict):
     """inputs two numbers and rounds them appropriately, treating x_error as an uncertainty."""
-    def __init__(self, x: float | int,  x_error: float | int) -> None:
+
+    def __init__(self, x: float | int, x_error: float | int) -> None:
         if isinstance(x, (float, int)) and isinstance(x_error, (float, int)):
             x, x_error = float(x), float(x_error)
             self.__x, self.__x_error, self.__exponent = _round_values(x, x_error)
         else:
             raise TypeError("x and x_error must be numbers")
+        dict.__init__(self, value=self.__x, error=self.__x_error)
 
     @property
-    def x(self):
+    def x(self) -> float:
         return self.__x
 
     @property
-    def x_error(self):
+    def x_error(self) -> float:
         return self.__x_error
 
     def get_values(self) -> Tuple[float, float]:
@@ -63,11 +68,14 @@ class NumWithError:
         output = output.replace(r"\tablenum", r"\num")
         return output
 
-    def __eq__(self, other):
-        return self.__x == other.__x and self.__x_error == other.__x_error
+    def __eq__(self, other: object) -> bool:
+        if hasattr(other, "__x") and hasattr(other, "__x_error"):
+            if isinstance(other.__x, float) and isinstance(other.__x_error, float):
+                return self.__x == other.__x and self.__x_error == other.__x_error
+        return False
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"NumWithError({self.__x}, {self.__x_error})"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.__x} +- {self.__x_error}"

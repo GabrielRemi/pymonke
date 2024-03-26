@@ -1,7 +1,9 @@
 from customtkinter import CTkFrame, CTkButton
 
+import json
 from typing import Any
 
+from ..data_init.browse_save_frame import BrowseSaveFrame
 from ..dict_frame import DictFrame
 from ..fitting.fit_frame import FitFrame
 from ..info_label import InfoLabel
@@ -31,17 +33,21 @@ class PlotFrame(CTkFrame):
         self.button.grid(row=3, column=0, columnspan=2)
 
         self.info_label = InfoLabel(master=self, text="")
-        self.info_label.grid(row=4, column=0, columnspan=2, pady=5)
+        self.info_label.grid(row=4, column=0, columnspan=3, pady=5)
 
         if get_meta(self).get("plotting_style") is None:
             get_meta(self)["plotting_style"] = dict()
         self.plotting_arguments = DictFrame(master=self, text="Plotting arguments",
                                             meta=get_meta(self)["plotting_style"])
-        self.plotting_arguments.grid(row=5, column=0, columnspan=2, pady=5)
+        self.plotting_arguments.grid(row=5, column=0, columnspan=2, pady=5, padx=10)
 
         self.misc_data_frame = MiscDataFrame(master=self)
         self.misc_data_frame.meta = get_meta(self)
         self.misc_data_frame.grid(row=1, column=2, rowspan=2)
+
+        self.save_results_frame = BrowseSaveFrame(master=self)
+        self.save_results_frame.save_button.configure(command=self.save_results)
+        self.save_results_frame.grid(row=5, column=2, padx=10)
 
     def plot_data(self) -> None:
         try:
@@ -77,5 +83,22 @@ class PlotFrame(CTkFrame):
         _max = float(self.x_limits_frame.max_var.get())
         get_meta(self)["x_min_limit"] = _min
         get_meta(self)["x_max_limit"] = _max
+
+    def save_results(self) -> None:
+        try:
+            results = get_root(self).fit_result
+            ret = dict()
+            if results is None:
+                return
+            for key in results.keys():
+                ret[key] = results[key].as_dict(True)  # type: ignore
+
+            text = json.dumps(ret, indent=2)
+            file = self.save_results_frame.browse_frame.file_path.get()
+            with open(file, "w") as f:
+                f.write(text)
+            self.info_label.show_info("Results saved successfully.")
+        except Exception as e:
+            self.info_label.show_error(e.__repr__())
 
 
